@@ -10,7 +10,7 @@ volumes:
 
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASIC_VERSION}
     restart: unless-stopped
     environment:
       - "discovery.type=single-node"
@@ -30,7 +30,7 @@ services:
       - elastic
 
   ent-search:
-    image: docker.elastic.co/enterprise-search/enterprise-search:7.16.1
+    image: docker.elastic.co/enterprise-search/enterprise-search:${ELASIC_VERSION}
     restart: unless-stopped
     depends_on:
       - "elasticsearch"
@@ -49,7 +49,7 @@ services:
       - elastic
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:7.16.1
+    image: docker.elastic.co/kibana/kibana:${ELASIC_VERSION}
     restart: unless-stopped
     depends_on:
       - "elasticsearch"
