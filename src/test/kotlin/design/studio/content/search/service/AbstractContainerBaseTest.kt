@@ -1,43 +1,49 @@
 package design.studio.content.search.service
 
-import lombok.extern.slf4j.Slf4j
+import design.studio.content.search.logger
 import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.ConfigurableApplicationContext
 import org.testcontainers.containers.DockerComposeContainer
+import org.testcontainers.containers.startupcheck.IndefiniteWaitOneShotStartupCheckStrategy
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.io.File
+import java.time.Duration
 
-@Slf4j
 @Testcontainers
 abstract class AbstractContainerBaseTest {
     companion object {
+        val logger = logger()
         var composeContainer: KDockerComposeContainer = KDockerComposeContainer(File("docker-compose.yml"))
             .withLocalCompose(true)
             .withEnv("ELASIC_VERSION", "7.16.2")
-//            .withExposedService(
-//                "elasticsearch_1", 9200,
-//                Wait.forHttp("/all")
-//                    .forStatusCode(200)
-//                    .usingTls()
-//            );
             .apply {
-                withExposedService(
-                    "elasticsearch_1",
-                    9200,
-                    WaitAllStrategy(WaitAllStrategy.Mode.WITH_INDIVIDUAL_TIMEOUTS_ONLY)
-                        .apply { withStrategy(Wait.forListeningPort()) }
-                        .apply {
-                            withStrategy(
-                                Wait.forLogMessage(
-                                    ".*Cluster health status changed from [YELLOW] to [GREEN].*",
-                                    1
-                                )
-                            )
-                        }
-                )
+                IndefiniteWaitOneShotStartupCheckStrategy()
             }
+            .withExposedService("elasticsearch_1", 9200,
+                WaitAllStrategy(WaitAllStrategy.Mode.WITH_INDIVIDUAL_TIMEOUTS_ONLY)
+                    .apply {
+                        withStrategy(
+                            Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(600))
+                        )
+                    }
+            )
+//            .apply {
+//                withExposedService(
+//                    "elasticsearch_1",
+//                    9200,
+//                    WaitAllStrategy(WaitAllStrategy.Mode.WITH_OUTER_TIMEOUT)
+//                        .apply {
+//                            withStrategy(
+//                                Wait.forLogMessage(
+//                                    ".*Cluster health status changed from [YELLOW] to [GREEN].*",
+//                                    1
+//                                )
+//                            )
+//                        }
+//                )
+//            }
 //            .apply {
 //                withExposedService("eck-on-gke_elasticsearch_1", 9200)
 //                withExposedService("eck-on-gke_ent-search_1", 3002)
@@ -48,6 +54,7 @@ abstract class AbstractContainerBaseTest {
 
     class Initializer : ApplicationContextInitializer<ConfigurableApplicationContext> {
         override fun initialize(applicationContext: ConfigurableApplicationContext) {
+            logger.info("@@@@@@@@@@@@@@@@@ IN")
             composeContainer.start()
         }
     }
