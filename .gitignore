@@ -2,3 +2,5 @@
 es/data
 .gradle
 build
+Makefile
+bin

@@ -10,7 +10,7 @@ destroy: ## Destroy all environment
 
 .PHONY: run
 run: ## Shorthand of running docker images
-	ELASIC_VERSION=7.16.2 docker-compose up --build --remove-orphans
+	ELASIC_VERSION=7.16.3 docker-compose up --build --remove-orphans
 
 .PHONY: help
 help: ## Display this help screen

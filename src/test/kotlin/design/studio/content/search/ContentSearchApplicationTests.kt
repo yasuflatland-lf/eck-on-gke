@@ -28,7 +28,7 @@ class ContentSearchApplicationTests : FunSpec() {
             client = WebTestClient.bindToServer().baseUrl(baseUri).build()
             client.get()
                 .exchange()
-                .expectStatus().isOk()
+                .expectStatus().is4xxClientError()
         }
     }
 

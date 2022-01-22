@@ -22,12 +22,19 @@ repositories {
 	mavenCentral()
 }
 
-extra["kotestVersion"] = "5.0.3"
+// Springboot
+extra["kotestVersion"] = "5.1.0"
 extra["springCloudGcpVersion"] = "2.0.7"
 extra["springCloudVersion"] = "2020.0.5"
 extra["testcontainersVersion"] = "1.16.2"
+extra["kotlin-coroutines.version"] = "1.6.0"
+
+// Elasticsearch
+extra["elasticVersion"] = "7.16.3"
+extra["jacksonDataBindVersion"] = "2.12.3"
 
 dependencies {
+	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor" )
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
@@ -45,10 +52,16 @@ dependencies {
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
 
+	// Elasticsearch
+	implementation("co.elastic.clients:elasticsearch-java:${property("elasticVersion")}")
+	implementation("com.fasterxml.jackson.core:jackson-databind:${property("jacksonDataBindVersion")}")
+
 	// Test
 	testImplementation("io.kotest:kotest-runner-junit5:${property("kotestVersion")}")
 	testImplementation("io.kotest:kotest-assertions-core:${property("kotestVersion")}")
 	testImplementation("io.kotest:kotest-property:${property("kotestVersion")}")
+	// TODO : Add the line below to get rid of error of coroutine for Kotest 5.1.0. https://github.com/kotest/kotest/issues/2782
+	testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.0")
 	testImplementation("io.kotest.extensions:kotest-extensions-spring:1.1.0")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")

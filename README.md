@@ -1,6 +1,5 @@
 # Elastic Cloud on Kubernetes(ECK) on GKE
 
 ## How to run Locally
-```
-ELASIC_VERSION=7.16.1 docker-compose up --build
-```
+1. Copy `Makefile.example` to `Makefile`
+2. Run `make run`
