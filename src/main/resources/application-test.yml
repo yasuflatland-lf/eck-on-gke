@@ -5,3 +5,5 @@ app:
   elastic:
     server-name: "elasticsearch"
     port: 9200
+    username: elastic
+    password: changeme
