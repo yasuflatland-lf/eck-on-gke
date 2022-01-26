@@ -10,6 +10,8 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.testcontainers.junit.jupiter.Testcontainers
+import java.net.InetSocketAddress
+
 
 @Testcontainers
 @ActiveProfiles("test")

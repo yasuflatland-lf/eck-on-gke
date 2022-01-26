@@ -11,27 +11,28 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
+
 /**
  * @author Yasuyuki Takeo
  */
 @Service
-class ElasticsearchSearchEngineService(private val config: ElasticConfig) {
-//    companion object {
-//        val log: Logger = LoggerFactory.getLogger(ElasticsearchSearchEngineService::class.java)
-//    }
-//
-//    private lateinit var client: ElasticsearchClient
-//
-//    private lateinit var transport: ElasticsearchTransport
-//
-//    // Create the low-level client
-//    private lateinit  var restClient: RestClient
-//
-//    init {
-//        restClient = RestClient.builder(
-//        HttpHost(config.serverName, config.port)
-//        ).build()
-//
+class ElasticsearchSearchEngineService(private val config: ElasticConfig) : ElasticsearchClientResolver {
+    companion object {
+        val log: Logger = LoggerFactory.getLogger(ElasticsearchSearchEngineService::class.java)
+    }
+
+    private lateinit var client: ElasticsearchClient
+
+    private lateinit var transport: ElasticsearchTransport
+
+    // Create the low-level client
+    private lateinit var restClient: RestClient
+
+    init {
+        restClient = RestClient.builder(
+            HttpHost(config.serverName, config.port)
+        ).build()
+
 //        // Create the transport with a Jackson mapper
 //        transport = RestClientTransport(
 //            restClient, JacksonJsonpMapper()
@@ -46,11 +47,11 @@ class ElasticsearchSearchEngineService(private val config: ElasticConfig) {
 //            req.roles("superuser")
 //            req.enabled(true)
 //        }
-//    }
-//
-//    override fun getClient(): ElasticsearchClient {
-//        return client
-//    }
+    }
+
+    override fun getClient(): ElasticsearchClient {
+        return client
+    }
 
     /**
      * Create Indices by Project ID
