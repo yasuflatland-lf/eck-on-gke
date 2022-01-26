@@ -23,6 +23,7 @@ class ElasticsearchSearchEngineServiceTest : FunSpec() {
     init {
         test("getClient") {
             elasticsearchSearchEngineService shouldNotBe null
+            elasticsearchSearchEngineService.getClient() shouldNotBe null
         }
     }
 }

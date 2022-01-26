@@ -3,7 +3,7 @@ server:
 
 app:
   elastic:
-    server-name: "elasticsearch"
+    server-name: "localhost"
     port: 9200
     username: elastic
     password: changeme

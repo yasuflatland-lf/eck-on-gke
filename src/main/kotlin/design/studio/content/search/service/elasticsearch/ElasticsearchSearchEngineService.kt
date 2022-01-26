@@ -6,7 +6,12 @@ import co.elastic.clients.transport.ElasticsearchTransport
 import co.elastic.clients.transport.rest_client.RestClientTransport
 import design.studio.content.search.service.elasticsearch.connection.ElasticsearchClientResolver
 import org.apache.http.HttpHost
+import org.apache.http.auth.AuthScope
+import org.apache.http.auth.UsernamePasswordCredentials
+import org.apache.http.client.CredentialsProvider
+import org.apache.http.impl.client.BasicCredentialsProvider
 import org.elasticsearch.client.RestClient
+import org.elasticsearch.client.RestClientBuilder
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -25,28 +30,33 @@ class ElasticsearchSearchEngineService(private val config: ElasticConfig) : Elas
 
     private lateinit var transport: ElasticsearchTransport
 
-    // Create the low-level client
-    private lateinit var restClient: RestClient
-
     init {
-        restClient = RestClient.builder(
+        var restClientBuilder: RestClientBuilder = RestClient.builder(
             HttpHost(config.serverName, config.port)
-        ).build()
+        )
 
-//        // Create the transport with a Jackson mapper
-//        transport = RestClientTransport(
-//            restClient, JacksonJsonpMapper()
-//        )
-//
-//        // And create the API client
-//        client = ElasticsearchClient(transport)
-//
-//        client.security().putUser { req ->
-//            req.username(config.username)
-//            req.password(config.password)
-//            req.roles("superuser")
-//            req.enabled(true)
-//        }
+        // Login with user if set in configs
+
+        // Login with user if set in configs
+        if (config.username != null) {
+            val credentialsProvider: CredentialsProvider = BasicCredentialsProvider()
+            credentialsProvider.setCredentials(
+                AuthScope.ANY,
+                UsernamePasswordCredentials(config.username, config.password)
+            )
+            restClientBuilder.setHttpClientConfigCallback { httpClientBuilder ->
+                httpClientBuilder.disableAuthCaching()
+                httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider)
+            }
+        }
+        // Create the transport with a Jackson mapper
+        transport = RestClientTransport(
+            restClientBuilder.build(), JacksonJsonpMapper()
+        )
+
+        // And create the API client
+        client = ElasticsearchClient(transport)
+
     }
 
     override fun getClient(): ElasticsearchClient {
