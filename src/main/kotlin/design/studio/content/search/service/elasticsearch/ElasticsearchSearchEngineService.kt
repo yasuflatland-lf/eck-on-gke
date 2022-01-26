@@ -1,5 +1,6 @@
 package design.studio.content.search.service.elasticsearch
 
+import co.elastic.clients.elasticsearch.ElasticsearchAsyncClient
 import co.elastic.clients.elasticsearch.ElasticsearchClient
 import co.elastic.clients.json.jackson.JacksonJsonpMapper
 import co.elastic.clients.transport.ElasticsearchTransport
@@ -26,10 +27,11 @@ class ElasticsearchSearchEngineService(private val config: ElasticConfig) : Elas
         val log: Logger = LoggerFactory.getLogger(ElasticsearchSearchEngineService::class.java)
     }
 
-    private lateinit var client: ElasticsearchClient
+    private lateinit var client: ElasticsearchAsyncClient
 
     private lateinit var transport: ElasticsearchTransport
 
+    // TODO : Extract into ElasticsearchConnectionBuilder
     init {
         var restClientBuilder: RestClientBuilder = RestClient.builder(
             HttpHost(config.serverName, config.port)
@@ -54,12 +56,14 @@ class ElasticsearchSearchEngineService(private val config: ElasticConfig) : Elas
             restClientBuilder.build(), JacksonJsonpMapper()
         )
 
-        // And create the API client
-        client = ElasticsearchClient(transport)
+        // And create the Asynchronous API client
+        // https://github.com/elastic/elasticsearch-java/blob/main/docs/api-conventions.asciidoc#blocking-and-asynchronous-clients
+        // https://github.com/elastic/elasticsearch-java/blob/f7f03a8af78f174724d38e14ddbebcdd438955dc/java-client/src/main/java/co/elastic/clients/elasticsearch/ElasticsearchAsyncClient.java
+        client = ElasticsearchAsyncClient(transport)
 
     }
 
-    override fun getClient(): ElasticsearchClient {
+    override fun getClient(): ElasticsearchAsyncClient {
         return client
     }
 
