@@ -9,17 +9,15 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.StringReader
 
-
+/**
+ * @author Yasuyuki Takeo
+ */
 class MappingFileReader() {
     companion object {
         val log: Logger = LoggerFactory.getLogger(MappingFileReader::class.java)
     }
 
-    lateinit var mapper: JsonpMapper
-
-    init {
-        mapper = JacksonJsonpMapper()
-    }
+    var mapper: JsonpMapper = JacksonJsonpMapper()
 
     // TODO : Real mapping format is found here:
     // https://www.elastic.co/guide/en/elasticsearch/reference/current/dynamic-templates.html#dynamic-mapping-runtime-fields

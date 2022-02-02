@@ -1,19 +1,14 @@
 package design.studio.content.search.service.elasticsearch
 
-import co.elastic.clients.elasticsearch.indices.GetMappingResponse
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 
 class MappingFileReaderTest : FunSpec() {
     override fun extensions() = listOf(SpringExtension)
-    companion object {
-        val log: Logger = LoggerFactory.getLogger(MappingFileReaderTest::class.java)
-    }
 
     init {
         test("getResource Test") {
@@ -22,7 +17,7 @@ class MappingFileReaderTest : FunSpec() {
             json shouldContain "template_long_sortable"
         }
 
-        test("fromJson Test") {
+        test("getTypeMappings Test") {
             val json = """{
   "testindex" : {
     "mappings" : {
@@ -62,10 +57,13 @@ class MappingFileReaderTest : FunSpec() {
     }
   }
 }"""
-            var reader: MappingFileReader = MappingFileReader()
-            var response: GetMappingResponse = reader.fromJson(json, GetMappingResponse._DESERIALIZER)
-            val mappings = response["testindex"].mappings()
-            (mappings.properties().get("name")?.isObject() ?: false ) shouldBe true
+            var reader = MappingFileReader()
+            val mappings = reader.getTypeMappings("testindex", json)
+            mappings shouldNotBe null
+            if (mappings != null) {
+                (mappings.properties().get("name")?.isObject() ?: false) shouldBe true
+                (mappings.properties().get("id")?.isText() ?: false) shouldBe true
+            }
         }
     }
 }
