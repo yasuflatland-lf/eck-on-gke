@@ -3,6 +3,7 @@ server:
 
 app:
   elastic:
+    connection-id: "__REMOTE__"
     server-name: "elasticsearch"
     port: 9200
     username: elastic

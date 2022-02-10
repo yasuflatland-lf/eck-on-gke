@@ -14,7 +14,7 @@ class MappingFileReaderTest : FunSpec() {
         test("getResource Test") {
             var reader: MappingFileReader = MappingFileReader()
             var json: String = reader.getResource(reader.MAPPING_FILE_PATH)
-            json shouldContain "template_long_sortable"
+            json shouldContain "with_positions_offsets"
         }
 
         test("studio-type-mappings.json Test") {
