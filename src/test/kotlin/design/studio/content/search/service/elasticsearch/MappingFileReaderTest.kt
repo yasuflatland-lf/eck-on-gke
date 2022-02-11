@@ -1,25 +1,28 @@
 package design.studio.content.search.service.elasticsearch
 
+import design.studio.content.search.service.elasticsearch.connection.constants.MappingConstants
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 
-
+/**
+ * @author Yasuyuki Takeo
+ */
 class MappingFileReaderTest : FunSpec() {
     override fun extensions() = listOf(SpringExtension)
 
     init {
         test("getResource Test") {
-            var reader: MappingFileReader = MappingFileReader()
-            var json: String = reader.getResource(reader.MAPPING_FILE_PATH)
+            var reader = MappingFileReader()
+            var json: String = reader.getResource(MappingConstants.MAPPING_FILE_PATH)
             json shouldContain "with_positions_offsets"
         }
 
         test("studio-type-mappings.json Test") {
-            var reader: MappingFileReader = MappingFileReader()
-            var json: String = reader.getResource(reader.MAPPING_FILE_PATH)
+            var reader = MappingFileReader()
+            var json: String = reader.getResource(MappingConstants.MAPPING_FILE_PATH)
             val mappings = reader.getTypeMappings("studio-index", json)
             mappings shouldNotBe null
             if (mappings != null) {

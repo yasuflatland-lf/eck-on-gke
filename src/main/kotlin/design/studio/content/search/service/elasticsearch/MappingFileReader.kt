@@ -13,10 +13,6 @@ import java.io.StringReader
 class MappingFileReader() {
     var mapper: JsonpMapper = JacksonJsonpMapper()
 
-    // TODO : Real mapping format is found here:
-    // https://www.elastic.co/guide/en/elasticsearch/reference/current/dynamic-templates.html#dynamic-mapping-runtime-fields
-    final val MAPPING_FILE_PATH = "/mappings/studio-type-mappings.json"
-
     fun getResource(fileName: String) =
         this::class.java.getResource(fileName).readText(Charsets.UTF_8)
 

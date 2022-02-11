@@ -10,6 +10,9 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.testcontainers.junit.jupiter.Testcontainers
 
+/**
+ * @author Yasuyuki Takeo
+ */
 @Testcontainers
 @SpringBootTest
 @ActiveProfiles("test")

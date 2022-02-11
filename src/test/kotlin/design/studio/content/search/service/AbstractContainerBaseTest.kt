@@ -11,6 +11,9 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import java.io.File
 import java.time.Duration
 
+/**
+ * @author Yasuyuki Takeo
+ */
 @Testcontainers
 abstract class AbstractContainerBaseTest {
     companion object {

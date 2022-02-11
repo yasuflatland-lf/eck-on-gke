@@ -8,11 +8,14 @@ import co.elastic.clients.elasticsearch.core.IndexResponse
 import co.elastic.clients.elasticsearch.indices.*
 import design.studio.content.search.model.CMSArticle
 import design.studio.content.search.service.elasticsearch.ElasticsearchSearchEngineService
+import design.studio.content.search.service.elasticsearch.MappingFileReader
+import design.studio.content.search.service.elasticsearch.connection.constants.MappingConstants
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import java.util.concurrent.CompletableFuture
+import javax.lang.model.type.TypeVariable
 
 /**
  * @author Yasuyuki Takeo
@@ -35,6 +38,12 @@ class CMSArticleHandler(
         })
     }
 
+    fun getMappings(indexName: String): TypeMapping? {
+        var reader = MappingFileReader()
+        var json: String = reader.getResource(MappingConstants.MAPPING_FILE_PATH)
+        return reader.getTypeMappings(indexName, json)
+    }
+
     // https://www.elastic.co/guide/en/elasticsearch/client/java-api-client/current/api-conventions.html
     fun initialize(indexName: String, alias: String): Mono<CreateIndexResponse> {
         // TODO: What's the better way to handle elasticsearch client? Passing as a parameter or holding value as a class valuable?
@@ -48,11 +57,11 @@ class CMSArticleHandler(
                         a
                             .isWriteIndex(true)
                     }
-                    .mappings { t: TypeMapping.Builder ->
-                        t.dynamicTemplates(
-                            mutableListOf()
-                        )
-                    }
+                    .mappings(getMappings(indexName))
+
+//                        t.dynamicTemplates(
+//                            mutableListOf()
+//                        )
             })
     }
 
@@ -69,3 +78,4 @@ class CMSArticleHandler(
     }
 
 }
+

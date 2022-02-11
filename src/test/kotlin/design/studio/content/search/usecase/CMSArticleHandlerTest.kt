@@ -11,6 +11,9 @@ import org.springframework.test.context.ContextConfiguration
 import org.testcontainers.junit.jupiter.Testcontainers
 import reactor.test.StepVerifier
 
+/**
+ * @author Yasuyuki Takeo
+ */
 @Testcontainers
 @SpringBootTest
 @ActiveProfiles("test")
@@ -21,10 +24,10 @@ class CMSArticleHandlerTest : FunSpec() {
     @Autowired
     lateinit var cmsArticleHandler: CMSArticleHandler
 
-    val indexName = "testindex"
+    val indexName = "studio-index"
 
     init {
-        beforeEach {
+        afterEach {
             cmsArticleHandler.deleteIndices(indexName).block()
         }
 

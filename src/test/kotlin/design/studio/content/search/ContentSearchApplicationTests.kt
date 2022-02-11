@@ -11,7 +11,9 @@ import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.testcontainers.junit.jupiter.Testcontainers
 
-
+/**
+ * @author Yasuyuki Takeo
+ */
 @Testcontainers
 @ActiveProfiles("test")
 @WebFluxTest(ContentSearchApplicationTests::class)
