@@ -14,6 +14,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
+import reactor.core.scheduler.Schedulers
 import java.util.concurrent.CompletableFuture
 import javax.lang.model.type.TypeVariable
 
@@ -33,8 +34,8 @@ class CMSArticleHandler(
     }
 
     fun deleteIndices(indexName: String): Mono<DeleteIndexResponse> {
-        return Mono.fromFuture(getClient().indices().delete{
-            d: DeleteIndexRequest.Builder -> d.index(indexName)
+        return Mono.fromFuture(getClient().indices().delete { d: DeleteIndexRequest.Builder ->
+            d.index(indexName)
         })
     }
 
@@ -58,14 +59,13 @@ class CMSArticleHandler(
                             .isWriteIndex(true)
                     }
                     .mappings(getMappings(indexName))
-
 //                        t.dynamicTemplates(
 //                            mutableListOf()
 //                        )
-            })
+            }).subscribeOn(Schedulers.boundedElastic())
     }
 
-    fun createIndex(indexName: String, id: String, entity: CMSArticle): Mono<IndexResponse> {
+    fun createIndex(indexName: String, id: String, entity: Any): Mono<IndexResponse> {
         return Mono.fromFuture(
             getClient().index { b: IndexRequest.Builder<Any?> ->
                 b
@@ -74,7 +74,7 @@ class CMSArticleHandler(
                     .document(entity)
                     .refresh(Refresh.True) // Make it visible for search
             }
-        )
+        ).subscribeOn(Schedulers.boundedElastic())
     }
 
 }

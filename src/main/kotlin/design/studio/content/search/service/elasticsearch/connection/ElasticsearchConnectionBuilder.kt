@@ -14,7 +14,7 @@ class ElasticsearchConnectionBuilder(
     data class Builder(
         var _connectionId: String? = null,
         var _serverName: String? = null,
-        var _port: Int? = 9200,
+        var _port: Int? = null,
         var _username: String? = null,
         var _password: String? = null,
         var _active: Boolean? = false
@@ -22,7 +22,7 @@ class ElasticsearchConnectionBuilder(
 
         fun connectionId(_connectionId: String) = apply { this._connectionId = _connectionId }
         fun serverName(_serverName: String) = apply { this._serverName = _serverName }
-        fun port(meat: Int) = apply { this._port = _port }
+        fun port(_port: Int) = apply { this._port = _port }
         fun username(_username: String) = apply { this._username = _username }
         fun password(_password: String) = apply { this._password = _password }
         fun active(_active: Boolean) = apply { this._active = _active }
