@@ -1,1 +1,1 @@
-rootProject.name = "content.search"
+rootProject.name = "eck-on-gek"
