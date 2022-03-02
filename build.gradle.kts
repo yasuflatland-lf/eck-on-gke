@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("io.freefair.lombok") version "6.3.0"
-    id("org.springframework.boot") version "2.6.3"
+    id("org.springframework.boot") version "2.6.4"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
     kotlin("jvm") version "1.6.10"
     kotlin("plugin.spring") version "1.6.10"
@@ -25,11 +25,11 @@ repositories {
 // Springboot
 extra["kotestVersion"] = "5.1.0"
 extra["springCloudVersion"] = "2021.0.0"
-extra["testcontainersVersion"] = "1.16.2"
+extra["testcontainersVersion"] = "1.16.3"
 extra["kotlin-coroutines.version"] = "1.6.0"
 
 // Elasticsearch
-extra["elasticVersion"] = "7.16.2"
+extra["elasticVersion"] = "7.17.1"
 extra["jacksonDataBindVersion"] = "2.13.1"
 
 dependencies {

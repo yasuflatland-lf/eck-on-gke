@@ -33,13 +33,8 @@ class CMSArticleHandler(
         return elasticsearchSearchEngineService.getClient()
     }
 
-    fun deleteIndices(indexName: String): Mono<DeleteIndexResponse> {
-        return Mono.fromFuture(getClient().indices().delete { d: DeleteIndexRequest.Builder ->
-            d.index(indexName)
-        })
-    }
-
     fun getMappings(indexName: String): TypeMapping? {
+        log.info("Loading the index mapping.")
         var reader = MappingFileReader()
         var json: String = reader.getResource(MappingConstants.MAPPING_FILE_PATH)
         return reader.getTypeMappings(indexName, json)
@@ -70,12 +65,17 @@ class CMSArticleHandler(
             getClient().index { b: IndexRequest.Builder<Any?> ->
                 b
                     .index(indexName)
-                    .id(id) // test with url-unsafe string
+                    .id(id)
                     .document(entity)
-                    .refresh(Refresh.True) // Make it visible for search
+                    .refresh(Refresh.True)
             }
         ).subscribeOn(Schedulers.boundedElastic())
     }
 
+    fun deleteIndices(indexName: String): Mono<DeleteIndexResponse> {
+        return Mono.fromFuture(getClient().indices().delete { d: DeleteIndexRequest.Builder ->
+            d.index(indexName)
+        })
+    }
 }
 
