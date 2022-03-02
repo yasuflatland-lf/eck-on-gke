@@ -1,11 +1,147 @@
 {
   "studio-index": {
+    "settings": {
+      "analysis": {
+        "char_filter": {
+          "normalize": {
+            "type": "icu_normalizer",
+            "name": "nfkc",
+            "mode": "compose"
+          }
+        },
+        "tokenizer": {
+          "kuromoji_tokenizer_ja": {
+            "mode": "search",
+            "type": "kuromoji_tokenizer",
+            "discard_compound_token": true
+          },
+          "ngram_tokenizer_ja": {
+            "type": "ngram",
+            "min_gram": 3,
+            "max_gram": 3,
+            "token_chars": [
+              "letter",
+              "digit"
+            ]
+          }
+        },
+        "analyzer": {
+          "keyword_lowercase": {
+            "filter": "lowercase",
+            "tokenizer": "keyword"
+          },
+          "studio_analyzer_en": {
+            "filter": [
+              "english_possessive_stemmer",
+              "lowercase",
+              "studio_filter_synonym_en",
+              "english_stop",
+              "english_stemmer"
+            ],
+            "tokenizer": "standard"
+          },
+          "studio_analyzer_ja": {
+            "char_filter": [
+              "normalize"
+            ],
+            "tokenizer": "kuromoji_tokenizer_ja",
+            "filter": [
+              "kuromoji_baseform",
+              "kuromoji_part_of_speech",
+              "studio_filter_synonym_ja",
+              "cjk_width",
+              "ja_stop",
+              "kuromoji_stemmer",
+              "lowercase"
+            ]
+          },
+          "studio_analyzer_search_ja": {
+            "char_filter": [
+              "normalize"
+            ],
+            "tokenizer": "kuromoji_tokenizer_ja",
+            "filter": [
+              "kuromoji_baseform",
+              "kuromoji_part_of_speech",
+              "studio_filter_synonym_ja",
+              "cjk_width",
+              "ja_stop",
+              "kuromoji_stemmer",
+              "lowercase"
+            ]
+          },
+          "studio_analyzer_ngram_ja": {
+            "type": "custom",
+            "char_filter": [
+              "normalize"
+            ],
+            "tokenizer": "ngram_tokenizer_ja",
+            "filter": [
+              "lowercase"
+            ]
+          },
+          "studio_analyzer_search_ngram_ja": {
+            "type": "custom",
+            "char_filter": [
+              "normalize"
+            ],
+            "tokenizer": "ngram_tokenizer_ja",
+            "filter": [
+              "studio_filter_synonym_ja",
+              "lowercase"
+            ]
+          }
+        },
+        "filter": {
+          "english_possessive_stemmer": {
+            "language": "possessive_english",
+            "type": "stemmer"
+          },
+          "english_stemmer": {
+            "language": "english",
+            "type": "stemmer"
+          },
+          "english_stop": {
+            "stopwords": "_english_",
+            "type": "stop"
+          },
+          "studio_filter_synonym_en": {
+            "lenient": true,
+            "synonyms": [],
+            "type": "synonym_graph"
+          },
+          "studio_filter_synonym_es": {
+            "lenient": true,
+            "synonyms": [],
+            "type": "synonym_graph"
+          },
+          "studio_filter_synonym_index_ja": {
+            "lenient": true,
+            "synonyms": [],
+            "type": "synonym_graph"
+          },
+          "studio_filter_synonym_ja": {
+            "lenient": true,
+            "synonyms": [],
+            "type": "synonym_graph"
+          }
+        }
+      }
+    },
     "mappings": {
       "dynamic_templates": [
         {
           "template_ja": {
             "mapping": {
-              "analyzer": "kuromoji",
+              "analyzer": "liferay_analyzer_ja",
+              "search_analyzer": "liferay_analyzer_search_ja",
+              "fields": {
+                "ngram": {
+                  "type": "text",
+                  "analyzer": "liferay_analyzer_ngram_ja",
+                  "search_analyzer": "liferay_analyzer_search_ngram_ja"
+                }
+              },
               "store": true,
               "term_vector": "with_positions_offsets",
               "type": "text"
