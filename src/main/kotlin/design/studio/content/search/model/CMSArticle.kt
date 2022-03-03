@@ -12,7 +12,9 @@ data class CMSArticle(
     var groupId: Long?,
     var roleIds: List<Long>?,
     var title: String?,
-    var content: String?
+    var content: String?,
+    var title_ja: String?,
+    var content_ja: String?
 ) {
-    constructor() : this(0, 0, 0, emptyList(), "", "")
+    constructor() : this(0, 0, 0, emptyList(), "", "","","")
 }

@@ -20,7 +20,7 @@ abstract class AbstractContainerBaseTest {
         val logger = logger()
         var composeContainer: KDockerComposeContainer = KDockerComposeContainer(File("docker-compose.yml"))
             .withLocalCompose(true)
-            .withEnv("ELASIC_VERSION", "7.16.2")
+            .withEnv("ELASIC_VERSION", "8.0.0")
             .apply {
                 IndefiniteWaitOneShotStartupCheckStrategy()
             }

@@ -46,6 +46,8 @@ class CMSArticleHandlerTest : FunSpec() {
                     var entiety = CMSArticle()
                     entiety.title = "test title"
                     entiety.content = "test content"
+                    entiety.title_ja = "test title"
+                    entiety.content_ja = "test content"
                     cmsArticleHandler.createIndex(indexName, "hoge", entiety)
                 }
             StepVerifier.create(result)
@@ -54,5 +56,6 @@ class CMSArticleHandlerTest : FunSpec() {
                 }
                 .verifyComplete()
         }
+
     }
 }

@@ -11,6 +11,7 @@
         },
         "tokenizer": {
           "kuromoji_tokenizer_ja": {
+            "type": "custom",
             "mode": "search",
             "type": "kuromoji_tokenizer",
             "discard_compound_token": true
@@ -27,10 +28,12 @@
         },
         "analyzer": {
           "keyword_lowercase": {
+            "type": "custom",
             "filter": "lowercase",
             "tokenizer": "keyword"
           },
           "studio_analyzer_en": {
+            "type": "custom",
             "filter": [
               "english_possessive_stemmer",
               "lowercase",
@@ -41,6 +44,7 @@
             "tokenizer": "standard"
           },
           "studio_analyzer_ja": {
+            "type": "custom",
             "char_filter": [
               "normalize"
             ],
@@ -56,6 +60,7 @@
             ]
           },
           "studio_analyzer_search_ja": {
+            "type": "custom",
             "char_filter": [
               "normalize"
             ],
@@ -131,15 +136,29 @@
     "mappings": {
       "dynamic_templates": [
         {
+          "template_en": {
+            "mapping": {
+              "analyzer": "english",
+              "search_analyzer": "studio_analyzer_en",
+              "store": true,
+              "term_vector": "with_positions_offsets",
+              "type": "text"
+            },
+            "match": "\\w+_en\\b|\\w+_en_[A-Z]{2}\\b",
+            "match_mapping_type": "string",
+            "match_pattern": "regex"
+          }
+        },
+        {
           "template_ja": {
             "mapping": {
-              "analyzer": "liferay_analyzer_ja",
-              "search_analyzer": "liferay_analyzer_search_ja",
+              "analyzer": "studio_analyzer_ja",
+              "search_analyzer": "studio_analyzer_search_ja",
               "fields": {
                 "ngram": {
                   "type": "text",
-                  "analyzer": "liferay_analyzer_ngram_ja",
-                  "search_analyzer": "liferay_analyzer_search_ngram_ja"
+                  "analyzer": "studio_analyzer_ngram_ja",
+                  "search_analyzer": "studio_analyzer_search_ngram_ja"
                 }
               },
               "store": true,
