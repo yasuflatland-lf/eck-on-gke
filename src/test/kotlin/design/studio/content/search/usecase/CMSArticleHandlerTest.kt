@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.testcontainers.junit.jupiter.Testcontainers
+import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
 /**
@@ -31,25 +32,16 @@ class CMSArticleHandlerTest : FunSpec() {
             cmsArticleHandler.deleteIndices(indexName).block()
         }
 
-        test("initialize smoke") {
-            val result = cmsArticleHandler.initialize(indexName, "foo")
-            StepVerifier.create(result)
-                .expectNextMatches { res ->
-                    res.acknowledged() == true
-                }
-                .verifyComplete()
-        }
-
         test("add index smoke") {
-            val result = cmsArticleHandler.initialize(indexName, "foo")
-                .flatMap { _ ->
-                    var entiety = CMSArticle()
-                    entiety.title = "test title"
-                    entiety.content = "test content"
-                    entiety.title_ja = "test title"
-                    entiety.content_ja = "test content"
-                    cmsArticleHandler.createIndex(indexName, "hoge", entiety)
-                }
+            val result = Mono.defer {
+                var entiety = CMSArticle()
+                entiety.title = "test title"
+                entiety.content = "test content"
+                entiety.title_ja = "test title"
+                entiety.content_ja = "test content"
+                return@defer cmsArticleHandler.createIndex(indexName, "hoge", entiety)
+            }
+
             StepVerifier.create(result)
                 .expectNextMatches { res ->
                     res.id() != ""

@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.testcontainers.junit.jupiter.Testcontainers
+import reactor.test.StepVerifier
 
 /**
  * @author Yasuyuki Takeo
@@ -23,10 +24,21 @@ class ElasticsearchSearchEngineServiceTest : FunSpec() {
     @Autowired
     lateinit var elasticsearchSearchEngineService: ElasticsearchSearchEngineService
 
+    val indexName = "studio-index"
+
     init {
         test("getClient") {
             elasticsearchSearchEngineService shouldNotBe null
             elasticsearchSearchEngineService.getClient() shouldNotBe null
+        }
+
+        test("initialize smoke") {
+            val result = elasticsearchSearchEngineService.initialize(indexName, "foo")
+            StepVerifier.create(result)
+                .expectNextMatches { res ->
+                    res.acknowledged() == true
+                }
+                .verifyComplete()
         }
     }
 }

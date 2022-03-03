@@ -24,7 +24,7 @@ data class ElasticsearchConnection(
     val _port: Int?,
     val _username: String?,
     val _password: String?,
-    val _active: Boolean?
+    var _active: Boolean?
 ) {
     companion object {
         val log: Logger = LoggerFactory.getLogger(ElasticsearchConnection::class.java)
@@ -36,14 +36,15 @@ data class ElasticsearchConnection(
     /**
      * Shutdown the connection to the Elasticsearch Server
      */
-    fun shutdown() {
-        if (_client == null) {
-            log.info("The ElasticsearchAsyncClient is null, could be already closed.")
+    fun close() {
+        if (_active == false) {
+            log.warn("The connection has been closed.")
             return
         }
 
         try {
-            _client.shutdown()
+            _transport.close()
+            _active = false
             log.info("_connectionId(${_connectionId}) is closed.")
         } catch (ioException: IOException) {
             throw RuntimeException(ioException)
@@ -57,9 +58,7 @@ data class ElasticsearchConnection(
         ElasticsearchSearchEngineService.log.info("Connecting to the Elasticsearch server")
 
         if (_active == false) {
-            if (log.isWarnEnabled) {
-                log.warn("Connecting inactive connection")
-            }
+            log.error("Connecting inactive connection")
         }
 
         // Get Client
