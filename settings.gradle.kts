@@ -1,1 +1,1 @@
-rootProject.name = "eck-on-gek"
+rootProject.name = "eck-on-gke"

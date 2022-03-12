@@ -1,16 +1,23 @@
 .PHONY: clean
 clean: ## Cleanup database
-	rm -fR ./es/data
+	rm -fR ./es/data ./es/logs
 	mkdir ./es/data
+	./gradlew clean
 
 .PHONY: destroy
 destroy: ## Destroy all environment
 	docker-compose down --rmi all --volumes --remove-orphans; \
-	rm -fR ./es/data
+	rm -fR ./es/data ./es/logs
+	rm -fR .gradle
+	rm -fR .idea
 
 .PHONY: run
 run: ## Shorthand of running docker images
-	ELASIC_VERSION=7.16.2 docker-compose up --build --remove-orphans
+	docker-compose up --build --remove-orphans
+
+.PHONY: down
+down: ## Stop Docker
+	docker-compose down
 
 .PHONY: help
 help: ## Display this help screen

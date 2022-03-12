@@ -4,3 +4,4 @@ es/data
 build
 Makefile
 bin
+.env
