@@ -3,7 +3,7 @@ services:
   setup:
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
     volumes:
-      - certs:/usr/share/elasticsearch/config/certs
+      - ./es/certs:/usr/share/elasticsearch/config/certs
     user: "0"
     command: >
       bash -c '
@@ -58,7 +58,7 @@ services:
       args:
         - STACK_VERSION=${STACK_VERSION}
     volumes:
-      - certs:/usr/share/elasticsearch/config/certs
+      - ./es/certs:/usr/share/elasticsearch/config/certs
       - ./es/data:/usr/share/elasticsearch/data
       - ./es/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - ./es/config/logging.yml:/usr/share/elasticsearch/config/logging.yml
@@ -105,7 +105,7 @@ services:
         condition: service_healthy
     image: docker.elastic.co/kibana/kibana:${STACK_VERSION}
     volumes:
-      - certs:/usr/share/kibana/config/certs
+      - ./es/certs:/usr/share/kibana/config/certs
       - kibanadata:/usr/share/kibana/data
     ports:
       - ${KIBANA_PORT}:5601
@@ -127,7 +127,5 @@ services:
       retries: 120
 
 volumes:
-  certs:
-    driver: local
   kibanadata:
     driver: local

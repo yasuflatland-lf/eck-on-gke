@@ -1,14 +1,12 @@
 .PHONY: clean
 clean: ## Cleanup database
-	rm -fR ./es/data ./es/logs
+	rm -fR ./es/data ./es/logs ./es/certs
 	mkdir ./es/data
 	./gradlew clean
 
 .PHONY: destroy
-destroy: ## Destroy all environment
+destroy: clean ## Destroy all environment
 	docker-compose down --rmi all --volumes --remove-orphans; \
-	rm -fR ./es/data ./es/logs
-	rm -fR .gradle
 	rm -fR .idea
 
 .PHONY: run

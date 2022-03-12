@@ -30,7 +30,7 @@ extra["kotlin-coroutines.version"] = "1.6.0"
 
 // Elasticsearch
 extra["elasticVersion"] = "8.1.0"
-extra["jacksonDataBindVersion"] = "2.13.1"
+extra["jacksonDataBindVersion"] = "2.12.3"
 
 dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
