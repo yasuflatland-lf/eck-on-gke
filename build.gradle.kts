@@ -54,6 +54,7 @@ dependencies {
     implementation("co.elastic.clients:elasticsearch-java:${property("elasticVersion")}")
     implementation("jakarta.json:jakarta.json-api:2.0.1")
     implementation("com.fasterxml.jackson.core:jackson-databind:${property("jacksonDataBindVersion")}")
+    implementation("org.apache.httpcomponents:httpclient:4.5.13")
 
     // Test
     testImplementation("io.kotest:kotest-runner-junit5:${property("kotestVersion")}")

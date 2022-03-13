@@ -35,59 +35,73 @@ class MappingFileReaderTest : FunSpec() {
 
         test("getTypeMappings Test") {
             val json = """{
-  "testindex" : {
-    "mappings" : {
-        "dynamic_templates": [
-          {
-            "integers": {
-              "match_mapping_type": "long",
-              "mapping": {
-                "type": "integer"
-              }
-            }
-          },
-          {
-            "strings": {
-              "match_mapping_type": "string",
-              "mapping": {
-                "type": "text",
-                "fields": {
-                  "raw": {
-                    "type":  "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              }
-            }
-          }
-        ],    
-      "properties" : {
-        "id" : {
-          "type" : "text",
-          "fields" : {
-            "keyword" : {
-              "type" : "keyword",
-              "ignore_above" : 256
+  "testindex": {
+    "mappings": {
+      "dynamic_templates": [
+        {
+          "integers": {
+            "match_mapping_type": "long",
+            "mapping": {
+              "type": "integer"
             }
           }
         },
-        "name" : {
-          "properties" : {
-            "first" : {
-              "type" : "text",
-              "fields" : {
-                "keyword" : {
-                  "type" : "keyword",
-                  "ignore_above" : 256
+        {
+          "strings": {
+            "match_mapping_type": "string",
+            "mapping": {
+              "type": "text",
+              "fields": {
+                "raw": {
+                  "type": "keyword",
+                  "ignore_above": 256
+                }
+              }
+            }
+          }
+        },
+        {
+          "template_en": {
+            "match_mapping_type": "string",
+            "match": "\\w+_en\\b|\\w+_en_[A-Z]{2}\\b",
+            "match_pattern": "regex",
+            "mapping": {
+              "analyzer": "english",
+              "search_analyzer": "studio_analyzer_en",
+              "store": true,
+              "term_vector": "with_positions_offsets",
+              "type": "text"
+            }
+          }
+        }
+      ],
+      "properties": {
+        "id": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "name": {
+          "properties": {
+            "first": {
+              "type": "text",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 256
                 }
               }
             },
-            "last" : {
-              "type" : "text",
-              "fields" : {
-                "keyword" : {
-                  "type" : "keyword",
-                  "ignore_above" : 256
+            "last": {
+              "type": "text",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 256
                 }
               }
             }
@@ -106,6 +120,7 @@ class MappingFileReaderTest : FunSpec() {
                 mappings.dynamicTemplates()[0].get("integers")?.matchMappingType() shouldBe "long"
                 mappings.dynamicTemplates()[1].get("strings")?.mapping()?.text()?.fields()?.get("raw")?.keyword()
                     ?.ignoreAbove() shouldBe 256
+                mappings.dynamicTemplates()[2].get("template_en")?.matchMappingType() shouldBe "string"
             }
         }
 

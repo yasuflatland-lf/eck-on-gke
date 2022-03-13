@@ -10,5 +10,6 @@ data class ElasticConfig(
     var serverName: String,
     var port: Int,
     var username: String,
-    var password: String
+    var password: String,
+    var caPath:String
 )

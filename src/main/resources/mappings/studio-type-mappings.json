@@ -11,7 +11,6 @@
         },
         "tokenizer": {
           "kuromoji_tokenizer_ja": {
-            "type": "custom",
             "mode": "search",
             "type": "kuromoji_tokenizer",
             "discard_compound_token": true
@@ -137,16 +136,16 @@
       "dynamic_templates": [
         {
           "template_en": {
+            "match_mapping_type": "string",
+            "match": "\\w+_en\\b|\\w+_en_[A-Z]{2}\\b",
+            "match_pattern": "regex",
             "mapping": {
               "analyzer": "english",
               "search_analyzer": "studio_analyzer_en",
               "store": true,
               "term_vector": "with_positions_offsets",
               "type": "text"
-            },
-            "match": "\\w+_en\\b|\\w+_en_[A-Z]{2}\\b",
-            "match_mapping_type": "string",
-            "match_pattern": "regex"
+            }
           }
         },
         {

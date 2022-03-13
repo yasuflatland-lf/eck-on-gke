@@ -7,4 +7,5 @@ app:
     server-name: "localhost"
     port: 9200
     username: elastic
-    password: changeme
+    password: test123
+    ca-path: "/Users/greeng/projects/eck-on-gke/es/certs/ca/ca.crt"

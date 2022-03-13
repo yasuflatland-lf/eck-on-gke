@@ -1,6 +1,7 @@
 package design.studio.content.search.service.elasticsearch
 
 import design.studio.content.search.service.AbstractContainerBaseTest
+import design.studio.content.search.service.elasticsearch.connection.constants.ConnectionConstants
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.shouldNotBe
@@ -27,13 +28,18 @@ class ElasticsearchSearchEngineServiceTest : FunSpec() {
     val indexName = "studio-index"
 
     init {
-        test("getClient") {
-            elasticsearchSearchEngineService shouldNotBe null
-            elasticsearchSearchEngineService.getClient() shouldNotBe null
+        afterEach {
+            var result = elasticsearchSearchEngineService.deleteIndices(indexName)
+            StepVerifier.create(result)
+                .expectNextMatches { res ->
+                    res.acknowledged()
+                }
+                .verifyComplete()
         }
 
         test("initialize smoke") {
-            val result = elasticsearchSearchEngineService.initialize(indexName, "foo")
+            val result =
+                elasticsearchSearchEngineService.initialize(indexName, ConnectionConstants.REMOTE_CONNECTION_ID)
             StepVerifier.create(result)
                 .expectNextMatches { res ->
                     res.acknowledged() == true

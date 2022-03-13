@@ -4,6 +4,7 @@ import design.studio.content.search.model.CMSArticle
 import design.studio.content.search.service.AbstractContainerBaseTest
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.spring.SpringExtension
+import io.kotest.matchers.shouldBe
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
@@ -29,7 +30,12 @@ class CMSArticleHandlerTest : FunSpec() {
 
     init {
         afterEach {
-            cmsArticleHandler.deleteIndices(indexName).block()
+            var result = cmsArticleHandler.deleteIndices(indexName)
+            StepVerifier.create(result)
+                .expectNextMatches { res ->
+                    res.acknowledged()
+                }
+                .verifyComplete()
         }
 
         test("add index smoke") {

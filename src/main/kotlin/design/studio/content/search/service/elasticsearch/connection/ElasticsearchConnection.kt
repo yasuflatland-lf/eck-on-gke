@@ -3,17 +3,22 @@ package design.studio.content.search.service.elasticsearch.connection
 import co.elastic.clients.elasticsearch.ElasticsearchAsyncClient
 import co.elastic.clients.json.jackson.JacksonJsonpMapper
 import co.elastic.clients.transport.rest_client.RestClientTransport
-import design.studio.content.search.service.elasticsearch.ElasticsearchSearchEngineService
 import org.apache.http.HttpHost
 import org.apache.http.auth.AuthScope
 import org.apache.http.auth.UsernamePasswordCredentials
-import org.apache.http.client.CredentialsProvider
 import org.apache.http.impl.client.BasicCredentialsProvider
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder
 import org.elasticsearch.client.RestClient
-import org.elasticsearch.client.RestClientBuilder
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.BufferedInputStream
+import java.io.FileInputStream
 import java.io.IOException
+import java.security.KeyStore
+import java.security.cert.CertificateFactory
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManagerFactory
+
 
 /**
  * @author Yasuyuki Takeo
@@ -24,19 +29,21 @@ data class ElasticsearchConnection(
     val _port: Int?,
     val _username: String?,
     val _password: String?,
+    var _caPath: String?,
     var _active: Boolean?
 ) {
     companion object {
         val log: Logger = LoggerFactory.getLogger(ElasticsearchConnection::class.java)
     }
 
-    private lateinit var _client: ElasticsearchAsyncClient
+    private lateinit var _asyncClient: ElasticsearchAsyncClient
     private lateinit var _transport: RestClientTransport
 
     /**
      * Shutdown the connection to the Elasticsearch Server
      */
     fun close() {
+        log.info("_connectionId(${_connectionId}) is closing...")
         if (_active == false) {
             log.warn("The connection has been closed.")
             return
@@ -55,42 +62,57 @@ data class ElasticsearchConnection(
      * Connect Elasticsearch Server
      */
     fun connect() {
-        ElasticsearchSearchEngineService.log.info("Connecting to the Elasticsearch server")
-
-        if (_active == false) {
-            log.error("Connecting inactive connection")
-        }
-
-        // Get Client
-        _client = createClient()
+        _asyncClient = createAsyncClient(_serverName!!, _username!!, _password!!, _port!!, _caPath!!)
     }
 
-    fun getClient(): ElasticsearchAsyncClient {
-        return _client
+    fun getAsyncClient(): ElasticsearchAsyncClient {
+        return _asyncClient
     }
 
-    private fun createClient(): ElasticsearchAsyncClient {
+    private fun createAsyncClient(
+        serverName: String,
+        username: String,
+        password: String,
+        port: Int,
+        caPath: String
+    ): ElasticsearchAsyncClient {
 
-        var restClientBuilder: RestClientBuilder = RestClient.builder(
-            _port?.let { HttpHost(_serverName, it) }
-        )
+        log.info("Elasticsearch Async client start creating...")
 
-        // Login with user if set in configs
-        if (_username != null) {
-            val credentialsProvider: CredentialsProvider = BasicCredentialsProvider()
-            credentialsProvider.setCredentials(
-                AuthScope.ANY,
-                UsernamePasswordCredentials(_username, _password)
-            )
-            restClientBuilder.setHttpClientConfigCallback { httpClientBuilder ->
-                httpClientBuilder.disableAuthCaching()
-                httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider)
-            }
+        val credentialsProvider = BasicCredentialsProvider()
+        credentialsProvider.setCredentials(AuthScope.ANY, UsernamePasswordCredentials(username, password))
+
+        val ks = KeyStore.getInstance("pkcs12")
+        ks.load(null, null)
+
+        val fis = FileInputStream(caPath)
+        val bis = BufferedInputStream(fis)
+
+        val cf: CertificateFactory = CertificateFactory.getInstance("X.509")
+        val cert = cf.generateCertificate(bis)
+        ks.setCertificateEntry("ca", cert)
+
+        val tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+        tmf.init(ks)
+
+        val context = SSLContext.getInstance("TLS")
+        context.init(null, tmf.trustManagers, null)
+
+        val restClientBuilder = RestClient.builder(
+            HttpHost(serverName, port, "https")
+        ).setHttpClientConfigCallback { httpClientBuilder: HttpAsyncClientBuilder ->
+            httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider)
+            httpClientBuilder.setSSLContext(context)
         }
+
         // Create the transport with a Jackson mapper
-        _transport = RestClientTransport(
-            restClientBuilder.build(), JacksonJsonpMapper()
-        )
+        if (restClientBuilder != null) {
+            _transport = RestClientTransport(
+                restClientBuilder.build(), JacksonJsonpMapper()
+            )
+        }
+
+        log.info("Elasticsearch Async client created.")
 
         // And create the Asynchronous API client
         // https://github.com/elastic/elasticsearch-java/blob/main/docs/api-conventions.asciidoc#blocking-and-asynchronous-clients

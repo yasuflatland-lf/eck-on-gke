@@ -16,7 +16,7 @@ import reactor.core.publisher.Mono
  */
 @Service
 class CMSArticleHandler(
-    private var elasticsearchSearchEngineService: ElasticsearchSearchEngineService
+    var elasticsearchSearchEngineService: ElasticsearchSearchEngineService
 ) {
     companion object {
         val log: Logger = LoggerFactory.getLogger(CMSArticleHandler::class.java)

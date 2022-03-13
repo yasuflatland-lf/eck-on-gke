@@ -8,3 +8,4 @@ app:
     port: 9200
     username: elastic
     password: changeme
+    ca-path: "/Users/greeng/projects/eck-on-gke/es/certs/ca/ca.crt"

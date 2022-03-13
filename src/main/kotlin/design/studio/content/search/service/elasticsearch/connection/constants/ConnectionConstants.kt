@@ -5,7 +5,7 @@ package design.studio.content.search.service.elasticsearch.connection.constants
  */
 class ConnectionConstants {
     companion object {
-        const val REMOTE_CONNECTION_ID = "__REMOTE__"
-        const val SIDECAR_CONNECTION_ID = "__SIDECAR__"
+        const val REMOTE_CONNECTION_ID = "REMOTE"
+        const val SIDECAR_CONNECTION_ID = "SIDECAR"
     }
 }

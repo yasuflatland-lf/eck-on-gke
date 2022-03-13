@@ -1,6 +1,5 @@
 package design.studio.content.search.service
 
-import design.studio.content.search.logger
 import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.ConfigurableApplicationContext
 import org.testcontainers.containers.DockerComposeContainer
@@ -17,10 +16,16 @@ import java.time.Duration
 @Testcontainers
 abstract class AbstractContainerBaseTest {
     companion object {
-        val logger = logger()
-        var composeContainer: KDockerComposeContainer = KDockerComposeContainer(File("docker-compose.yml"))
+        var composeContainer: KDockerComposeContainer = KDockerComposeContainer(File("docker-compose-test.yml"))
             .withLocalCompose(true)
-            .withEnv("ELASIC_VERSION", "8.0.0")
+            .withEnv("STACK_VERSION", "8.1.0")
+            .withEnv("ELASTIC_PASSWORD", "test123")
+            .withEnv("KIBANA_PASSWORD", "test123")
+            .withEnv("CLUSTER_NAME", "StudioElasticsearchCluster")
+            .withEnv("LICENSE", "basic")
+            .withEnv("ES_PORT", "9200")
+            .withEnv("KIBANA_PORT", "5601")
+            .withEnv("MEM_LIMIT", "1073741824")
             .apply {
                 IndefiniteWaitOneShotStartupCheckStrategy()
             }
@@ -32,27 +37,6 @@ abstract class AbstractContainerBaseTest {
                         )
                     }
             )
-//            .apply {
-//                withExposedService(
-//                    "elasticsearch_1",
-//                    9200,
-//                    WaitAllStrategy(WaitAllStrategy.Mode.WITH_OUTER_TIMEOUT)
-//                        .apply {
-//                            withStrategy(
-//                                Wait.forLogMessage(
-//                                    ".*Cluster health status changed from [YELLOW] to [GREEN].*",
-//                                    1
-//                                )
-//                            )
-//                        }
-//                )
-//            }
-//            .apply {
-//                withExposedService("eck-on-gke_elasticsearch_1", 9200)
-//                withExposedService("eck-on-gke_ent-search_1", 3002)
-//                withExposedService("eck-on-gke_kubana_1", 5602)
-//                start()
-//            }
     }
 
     class Initializer : ApplicationContextInitializer<ConfigurableApplicationContext> {

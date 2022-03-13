@@ -2,10 +2,7 @@ package design.studio.content.search.service.elasticsearch
 
 import co.elastic.clients.elasticsearch.ElasticsearchAsyncClient
 import co.elastic.clients.elasticsearch._types.mapping.TypeMapping
-import co.elastic.clients.elasticsearch.indices.Alias
-import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
-import co.elastic.clients.elasticsearch.indices.CreateIndexResponse
-import co.elastic.clients.elasticsearch.indices.IndexSettings
+import co.elastic.clients.elasticsearch.indices.*
 import design.studio.content.search.service.elasticsearch.connection.ElasticsearchClientResolver
 import design.studio.content.search.service.elasticsearch.connection.ElasticsearchConnection
 import design.studio.content.search.service.elasticsearch.connection.ElasticsearchConnectionBuilder
@@ -15,6 +12,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
+import reactor.core.scheduler.Schedulers
+import reactor.kotlin.core.publisher.toMono
 import java.io.IOException
 import javax.annotation.PreDestroy
 
@@ -38,7 +37,7 @@ class ElasticsearchSearchEngineService(config: ElasticConfig) : ElasticsearchCli
     fun close() {
         try {
             elasticsearchConnection.close()
-            log.info("Elasticsearch connection was closed.")
+
         } catch (ioException: IOException) {
             throw RuntimeException(ioException)
         }
@@ -51,15 +50,14 @@ class ElasticsearchSearchEngineService(config: ElasticConfig) : ElasticsearchCli
             .port(config.port)
             .username(config.username)
             .password(config.password)
+            .caPath(config.caPath)
             .active(true)
             .build()
 
         try {
             elasticsearchConnection.connect()
         } catch (runtimeException: RuntimeException) {
-            if (config.connectionId.equals(
-                    ConnectionConstants.SIDECAR_CONNECTION_ID
-                )
+            if (config.connectionId == ConnectionConstants.SIDECAR_CONNECTION_ID
             ) {
                 log.error(
                     "Elasticsearch sidecar could not be started",
@@ -72,7 +70,7 @@ class ElasticsearchSearchEngineService(config: ElasticConfig) : ElasticsearchCli
     }
 
     override fun getClient(): ElasticsearchAsyncClient {
-        return elasticsearchConnection.getClient()
+        return elasticsearchConnection.getAsyncClient()
     }
 
     /**
@@ -90,13 +88,9 @@ class ElasticsearchSearchEngineService(config: ElasticConfig) : ElasticsearchCli
     }
 
     fun initialize(indexName: String, alias: String): Mono<CreateIndexResponse> {
-        // https://www.elastic.co/guide/en/elasticsearch/client/java-api-client/current/api-conventions.html
-        return Mono.defer {
-            // Get Elasticsearch settings
-            val (indexSettings, typeMapping) = getElaticSettings(indexName)
-
-            // TODO: What's the better way to handle elasticsearch client? Passing as a parameter or holding value as a class valuable?
-            return@defer Mono.fromFuture(getClient().indices()
+        // https://www.elastic.co/guide/en/elasticsearch/client/java-api-client/current/api-conventions.htmll
+        return getElaticSettings(indexName).toMono().flatMap { (indexSettings, typeMapping) ->
+            getClient().indices()
                 .create { c: CreateIndexRequest.Builder ->
                     c.index(indexName)
                         .aliases(
@@ -106,37 +100,21 @@ class ElasticsearchSearchEngineService(config: ElasticConfig) : ElasticsearchCli
                         }
                         .settings(indexSettings)
                         .mappings(typeMapping)
-                })
+                }.toMono().doOnSuccess {
+                    log.info("Index settings and mapping is correctly applied.")
+                }.doOnError {
+                    log.error("Failed to initialize ${indexName}. \n\n" + it.stackTraceToString())
+                }.subscribeOn(Schedulers.boundedElastic())
         }
     }
 
-    /**
-     * Create Indices by Project ID
-     */
-    fun createIndicesByProjectId(): String? {
-        return ""
+    fun deleteIndices(indexName: String): Mono<DeleteIndexResponse> {
+        return Mono.fromFuture(getClient().indices().delete { d: DeleteIndexRequest.Builder ->
+            d.index(indexName)
+        }).doOnSuccess {
+            log.info("${indexName} is deleted")
+        }.doOnError {
+            log.error("Failed to delete ${indexName}. \n\n" + it.stackTraceToString())
+        }
     }
-
-    /**
-     * Remove Indices by Project Id
-     */
-    fun removeIndicesByProjectId(): String? {
-        return ""
-    }
-
-    /**
-     * Backup Indices
-     */
-    fun backup(): String? {
-        return ""
-    }
-
-    /**
-     * Restore Indices
-     */
-    fun restore(): String? {
-        return ""
-    }
-
-
 }
