@@ -23,13 +23,13 @@ repositories {
 }
 
 // Springboot
-extra["kotestVersion"] = "5.1.0"
+extra["kotestVersion"] = "5.2.1"
 extra["springCloudVersion"] = "2021.0.0"
 extra["testcontainersVersion"] = "1.16.3"
 extra["kotlin-coroutines.version"] = "1.6.0"
 
 // Elasticsearch
-extra["elasticVersion"] = "8.1.0"
+extra["elasticVersion"] = "8.1.1"
 extra["jacksonDataBindVersion"] = "2.12.3"
 
 dependencies {

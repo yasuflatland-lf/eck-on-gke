@@ -2,6 +2,7 @@ package design.studio.content.search.service.elasticsearch
 
 import co.elastic.clients.elasticsearch.ElasticsearchAsyncClient
 import co.elastic.clients.elasticsearch._types.mapping.TypeMapping
+import co.elastic.clients.elasticsearch._types.query_dsl.Query
 import co.elastic.clients.elasticsearch.indices.*
 import design.studio.content.search.service.elasticsearch.connection.ElasticsearchClientResolver
 import design.studio.content.search.service.elasticsearch.connection.ElasticsearchConnection
@@ -16,7 +17,6 @@ import reactor.core.scheduler.Schedulers
 import reactor.kotlin.core.publisher.toMono
 import java.io.IOException
 import javax.annotation.PreDestroy
-
 
 /**
  * @author Yasuyuki Takeo
@@ -115,6 +115,16 @@ class ElasticsearchSearchEngineService(config: ElasticConfig) : ElasticsearchCli
             log.info("${indexName} is deleted")
         }.doOnError {
             log.error("Failed to delete ${indexName}. \n\n" + it.stackTraceToString())
+        }
+    }
+
+    fun getQueryFromJSON(queryJSON: String): Mono<Query> {
+        return Mono.defer {
+            var reader = MappingFileReader()
+            var query = reader.fromJson(
+                queryJSON, Query._DESERIALIZER
+            )
+            return@defer Mono.just(query)
         }
     }
 }

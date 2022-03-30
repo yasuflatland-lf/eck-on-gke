@@ -1,8 +1,10 @@
 package design.studio.content.search.service.elasticsearch
 
+import co.elastic.clients.elasticsearch._types.query_dsl.*
 import design.studio.content.search.service.elasticsearch.connection.constants.MappingConstants
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.spring.SpringExtension
+import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
@@ -26,7 +28,8 @@ class MappingFileReaderTest : FunSpec() {
             val mappings = reader.getTypeMappings("studio-index", json)
             mappings shouldNotBe null
             if (mappings != null) {
-                mappings.dynamicTemplates()[1].get("template_ja")?.mapping()?.text()?.analyzer() shouldBe "studio_analyzer_ja"
+                mappings.dynamicTemplates()[1].get("template_ja")?.mapping()?.text()
+                    ?.analyzer() shouldBe "studio_analyzer_ja"
                 mappings.dynamicTemplates()[1].get("template_ja")?.mapping()?.text()?.store() shouldBe true
                 (mappings.dynamicTemplates()[1].get("template_ja")?.mapping()?.text()?.termVector()?.jsonValue()
                     ?: "") shouldBe "with_positions_offsets"
@@ -267,6 +270,36 @@ class MappingFileReaderTest : FunSpec() {
             if (settings != null) {
                 settings.analysis()?.tokenizer()?.get("kuromoji_tokenizer_ja")?.isDefinition shouldBe true
             }
+        }
+
+        test("getQueryFromJSON Test") {
+            var reader = MappingFileReader()
+            val expected = Query.of { _0: Query.Builder ->
+                _0
+                    .intervals { _1: IntervalsQuery.Builder ->
+                        _1
+                            .queryName("my-query")
+                            .field("a_field")
+                            .anyOf { _2: IntervalsAnyOf.Builder ->
+                                _2
+                                    .intervals { _3: Intervals.Builder ->
+                                        _3
+                                            .match { _5: IntervalsMatch.Builder ->
+                                                _5
+                                                    .query("match-query")
+                                                    .analyzer("lowercase")
+                                            }
+                                    }
+                            }
+                    }
+            }
+            var queryJSON = "{\"intervals\":{\"a_field\":{\"_name\":\"my-query\"," +
+                    "\"any_of\":{\"intervals\":[{\"match\":{\"analyzer\":\"lowercase\",\"query\":\"match-query\"}}]}}}}"
+            var query = reader.fromJson(
+                queryJSON, Query._DESERIALIZER
+            )
+
+            reader.toJson(query) shouldBe reader.toJson(expected)
         }
     }
 }

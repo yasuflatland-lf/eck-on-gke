@@ -8,7 +8,14 @@ import co.elastic.clients.json.JsonpDeserializer
 import co.elastic.clients.json.JsonpMapper
 import co.elastic.clients.json.jackson.JacksonJsonpMapper
 import io.micrometer.core.instrument.config.InvalidConfigurationException
+import jakarta.json.spi.JsonProvider
+import jakarta.json.stream.JsonGenerator
+import jakarta.json.stream.JsonParser
 import java.io.StringReader
+import java.io.StringWriter
+
+
+
 
 /**
  * @author Yasuyuki Takeo
@@ -33,9 +40,22 @@ class MappingFileReader() {
         return response.get(indexName).settings()
     }
 
+    fun <T> toJson(value: T): String? {
+        val sw = StringWriter()
+        val provider: JsonProvider = mapper.jsonProvider()
+        val generator: JsonGenerator = provider.createGenerator(sw)
+        mapper.serialize(value, generator)
+        generator.close()
+        return sw.toString()
+    }
+
     fun <T> fromJson(json: String?, deserializer: JsonpDeserializer<T>): T {
-        val parser: jakarta.json.stream.JsonParser? = mapper.jsonProvider().createParser(StringReader(json))
+        val parser: JsonParser? = mapper.jsonProvider().createParser(StringReader(json))
         return deserializer.deserialize(parser, mapper)
     }
 
+    fun <T> fromJson(json: String?, clazz: Class<T>?): T {
+        val parser: JsonParser? = mapper.jsonProvider().createParser(StringReader(json))
+        return mapper.deserialize(parser, clazz)
+    }
 }
