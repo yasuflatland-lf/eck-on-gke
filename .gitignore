@@ -6,3 +6,4 @@ Makefile
 bin
 .env
 es/certs
+.vscode

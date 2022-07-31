@@ -1,16 +1,16 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("io.freefair.lombok") version "6.3.0"
-    id("org.springframework.boot") version "2.6.4"
-    id("io.spring.dependency-management") version "1.0.11.RELEASE"
-    kotlin("jvm") version "1.6.10"
-    kotlin("plugin.spring") version "1.6.10"
+    id("io.freefair.lombok") version "6.5.0.3"
+    id("org.springframework.boot") version "2.6.9"
+    id("io.spring.dependency-management") version "1.0.12.RELEASE"
+    kotlin("jvm") version "1.6.21"
+    kotlin("plugin.spring") version "1.6.21"
 }
 
 group = "design.studio"
 version = "1.0.0-SNAPSHOT"
-java.sourceCompatibility = JavaVersion.VERSION_1_8
+java.sourceCompatibility = JavaVersion.VERSION_11
 
 configurations {
     compileOnly {
@@ -23,13 +23,13 @@ repositories {
 }
 
 // Springboot
-extra["kotestVersion"] = "5.2.1"
+extra["kotestVersion"] = "5.1.0"
 extra["springCloudVersion"] = "2021.0.0"
-extra["testcontainersVersion"] = "1.16.3"
-extra["kotlin-coroutines.version"] = "1.6.0"
+extra["testcontainersVersion"] = "1.17.3"
+extra["kotlin-coroutines.version"] = "1.6.3"
 
 // Elasticsearch
-extra["elasticVersion"] = "8.1.1"
+extra["elasticVersion"] = "8.3.3"
 extra["jacksonDataBindVersion"] = "2.12.3"
 
 dependencies {

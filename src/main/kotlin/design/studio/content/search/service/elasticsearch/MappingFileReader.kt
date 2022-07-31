@@ -30,14 +30,14 @@ class MappingFileReader() {
         val response: GetMappingResponse = fromJson(json, GetMappingResponse._DESERIALIZER)
             ?: throw InvalidConfigurationException("Mappings are not properly defined.")
 
-        return response.get(indexName).mappings()
+        return response.get(indexName)!!.mappings()
     }
 
     fun getIndexSettings(indexName: String, json: String): IndexSettings? {
         val response: GetIndicesSettingsResponse = fromJson(json, GetIndicesSettingsResponse._DESERIALIZER)
             ?: throw InvalidConfigurationException("Index settings are not properly defined.")
 
-        return response.get(indexName).settings()
+        return response.get(indexName)!!.settings()
     }
 
     fun <T> toJson(value: T): String? {
