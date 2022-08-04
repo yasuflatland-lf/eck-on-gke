@@ -9,12 +9,12 @@ import design.studio.content.search.service.elasticsearch.connection.Elasticsear
 import design.studio.content.search.service.elasticsearch.connection.ElasticsearchConnectionBuilder
 import design.studio.content.search.service.elasticsearch.connection.constants.ConnectionConstants
 import design.studio.content.search.service.elasticsearch.connection.constants.MappingConstants
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
-import reactor.core.scheduler.Schedulers
-import reactor.kotlin.core.publisher.toMono
 import java.io.IOException
 import javax.annotation.PreDestroy
 
@@ -73,39 +73,56 @@ class ElasticsearchSearchEngineService(config: ElasticConfig) : ElasticsearchCli
         return elasticsearchConnection.getAsyncClient()
     }
 
-    /**
-     * Return Elasticsearch Settings
-     */
-    fun getElaticSettings(indexName: String): Pair<IndexSettings?, TypeMapping?> {
-        log.info("Loading the index mapping.")
-        var reader = MappingFileReader()
-        var json: String = reader.getResource(MappingConstants.MAPPING_FILE_PATH)
+    suspend fun initialize(indexName: String, alias: String): CreateIndexResponse = coroutineScope {
+        runCatching {
+            async {
+                log.info("Loading the index mapping.")
+                var reader = MappingFileReader()
+                var json: String = reader.getResource(MappingConstants.MAPPING_FILE_PATH)
 
-        var typeMapping: TypeMapping? = reader.getTypeMappings(indexName, json)
-        var indexSettings: IndexSettings? = reader.getIndexSettings(indexName, json)
+                var typeMapping: TypeMapping? = reader.getTypeMappings(indexName, json)
+                var indexSettings: IndexSettings? = reader.getIndexSettings(indexName, json)
 
-        return Pair(indexSettings, typeMapping)
-    }
+                getClient().indices()
+                    .create { c: CreateIndexRequest.Builder ->
+                        c.index(indexName)
+                            .aliases(
+                                alias
+                            ) { a: Alias.Builder ->
+                                a.isWriteIndex(true)
+                            }
+                            .settings(indexSettings)
+                            .mappings(typeMapping)
+                    }
+            }
+        }.fold(
+            onSuccess = {
+                log.info("Index settings and mapping is correctly applied.")
+                return@coroutineScope it.await().get()
+            },
+            onFailure = {
+                log.error("Failed to initialize ${indexName}. \n\n" + it.stackTraceToString())
+                throw it
+            }
+        )
+//        var createIndexResponse = async {
+//            getClient().indices()
+//                .create { c: CreateIndexRequest.Builder ->
+//                    c.index(indexName)
+//                        .aliases(
+//                            alias
+//                        ) { a: Alias.Builder ->
+//                            a.isWriteIndex(true)
+//                        }
+//                        .settings(indexSettings)
+//                        .mappings(typeMapping)
+//                }
+//        }
+//
+//        return@coroutineScope createIndexResponse.await().get()
 
-    fun initialize(indexName: String, alias: String): Mono<CreateIndexResponse> {
         // https://www.elastic.co/guide/en/elasticsearch/client/java-api-client/current/api-conventions.htmll
-        return getElaticSettings(indexName).toMono().flatMap { (indexSettings, typeMapping) ->
-            getClient().indices()
-                .create { c: CreateIndexRequest.Builder ->
-                    c.index(indexName)
-                        .aliases(
-                            alias
-                        ) { a: Alias.Builder ->
-                            a.isWriteIndex(true)
-                        }
-                        .settings(indexSettings)
-                        .mappings(typeMapping)
-                }.toMono().doOnSuccess {
-                    log.info("Index settings and mapping is correctly applied.")
-                }.doOnError {
-                    log.error("Failed to initialize ${indexName}. \n\n" + it.stackTraceToString())
-                }.subscribeOn(Schedulers.boundedElastic())
-        }
+
     }
 
     fun deleteIndices(indexName: String): Mono<DeleteIndexResponse> {

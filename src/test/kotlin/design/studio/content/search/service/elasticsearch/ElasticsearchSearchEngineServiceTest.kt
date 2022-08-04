@@ -4,7 +4,8 @@ import design.studio.content.search.service.AbstractContainerBaseTest
 import design.studio.content.search.service.elasticsearch.connection.constants.ConnectionConstants
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.spring.SpringExtension
-import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.test.runTest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
@@ -38,13 +39,12 @@ class ElasticsearchSearchEngineServiceTest : FunSpec() {
         }
 
         test("initialize smoke") {
-            val result =
-                elasticsearchSearchEngineService.initialize(indexName, ConnectionConstants.REMOTE_CONNECTION_ID)
-            StepVerifier.create(result)
-                .expectNextMatches { res ->
-                    res.acknowledged() == true
-                }
-                .verifyComplete()
+            runTest {
+                val result =
+                    elasticsearchSearchEngineService.initialize(indexName, ConnectionConstants.REMOTE_CONNECTION_ID)
+                result.index() shouldBe "studio-index"
+
+            }
         }
     }
 }
