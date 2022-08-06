@@ -30,12 +30,9 @@ class ElasticsearchSearchEngineServiceTest : FunSpec() {
 
     init {
         afterEach {
-            var result = elasticsearchSearchEngineService.deleteIndices(indexName)
-            StepVerifier.create(result)
-                .expectNextMatches { res ->
-                    res.acknowledged()
-                }
-                .verifyComplete()
+            runTest {
+                elasticsearchSearchEngineService.deleteIndices(indexName)
+            }
         }
 
         test("initialize smoke") {
@@ -43,7 +40,6 @@ class ElasticsearchSearchEngineServiceTest : FunSpec() {
                 val result =
                     elasticsearchSearchEngineService.initialize(indexName, ConnectionConstants.REMOTE_CONNECTION_ID)
                 result.index() shouldBe "studio-index"
-
             }
         }
     }

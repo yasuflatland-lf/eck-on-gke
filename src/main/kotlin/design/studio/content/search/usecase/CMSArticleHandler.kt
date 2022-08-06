@@ -4,12 +4,14 @@ import co.elastic.clients.elasticsearch.ElasticsearchAsyncClient
 import co.elastic.clients.elasticsearch._types.Refresh
 import co.elastic.clients.elasticsearch.core.IndexRequest
 import co.elastic.clients.elasticsearch.core.IndexResponse
-import co.elastic.clients.elasticsearch.indices.*
+import co.elastic.clients.elasticsearch.indices.DeleteIndexRequest
+import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse
 import design.studio.content.search.service.elasticsearch.ElasticsearchSearchEngineService
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import reactor.core.publisher.Mono
 
 /**
  * @author Yasuyuki Takeo
@@ -26,22 +28,46 @@ class CMSArticleHandler(
         return elasticsearchSearchEngineService.getClient()
     }
 
-    fun createIndex(indexName: String, id: String, entity: Any): Mono<IndexResponse> {
-        return Mono.fromFuture(
-            getClient().index { b: IndexRequest.Builder<Any?> ->
-                b
-                    .index(indexName)
-                    .id(id)
-                    .document(entity)
-                    .refresh(Refresh.True)
+    suspend fun createIndex(indexName: String, id: String, entity: Any): IndexResponse = coroutineScope {
+        return@coroutineScope runCatching {
+            async {
+                getClient().index { b: IndexRequest.Builder<Any?> ->
+                    b
+                        .index(indexName)
+                        .id(id)
+                        .document(entity)
+                        .refresh(Refresh.True)
+                }
+            }
+        }.fold(
+            onSuccess = {
+                ElasticsearchSearchEngineService.log.info("${indexName} is created")
+                return@fold it.await().get()
+            },
+            onFailure = {
+                ElasticsearchSearchEngineService.log.error("Failed to create ${indexName}. \n\n" + it.stackTraceToString())
+                throw it
             }
         )
     }
 
-    fun deleteIndices(indexName: String): Mono<DeleteIndexResponse> {
-        return Mono.fromFuture(getClient().indices().delete { d: DeleteIndexRequest.Builder ->
-            d.index(indexName)
-        })
+    suspend fun deleteIndices(indexName: String): DeleteIndexResponse = coroutineScope {
+        return@coroutineScope runCatching {
+            async {
+                getClient().indices().delete { d: DeleteIndexRequest.Builder ->
+                    d.index(indexName)
+                }
+            }
+        }.fold(
+            onSuccess = {
+                ElasticsearchSearchEngineService.log.info("${indexName} is deleteed")
+                return@fold it.await().get()
+            },
+            onFailure = {
+                ElasticsearchSearchEngineService.log.error("Failed to delete ${indexName}. \n\n" + it.stackTraceToString())
+                throw it
+            }
+        )
     }
 }
 

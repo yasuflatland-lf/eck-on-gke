@@ -5,13 +5,14 @@ import design.studio.content.search.service.AbstractContainerBaseTest
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
+import kotlinx.coroutines.async
+import kotlinx.coroutines.test.runTest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.testcontainers.junit.jupiter.Testcontainers
-import reactor.core.publisher.Mono
-import reactor.test.StepVerifier
 
 /**
  * @author Yasuyuki Takeo
@@ -30,29 +31,23 @@ class CMSArticleHandlerTest : FunSpec() {
 
     init {
         afterEach {
-            var result = cmsArticleHandler.deleteIndices(indexName)
-            StepVerifier.create(result)
-                .expectNextMatches { res ->
-                    res.acknowledged()
-                }
-                .verifyComplete()
+            runTest {
+                var result = cmsArticleHandler.deleteIndices(indexName)
+            }
         }
 
         test("add index smoke") {
-            val result = Mono.defer {
+            runTest {
                 var entiety = CMSArticle()
+                var id = "hoge"
+
                 entiety.title = "test title"
                 entiety.content = "test content"
                 entiety.title_ja = "test title"
                 entiety.content_ja = "test content"
-                return@defer cmsArticleHandler.createIndex(indexName, "hoge", entiety)
+                var res = async { cmsArticleHandler.createIndex(indexName, id, entiety) }
+                res.await().id() shouldBe id
             }
-
-            StepVerifier.create(result)
-                .expectNextMatches { res ->
-                    res.id() != ""
-                }
-                .verifyComplete()
         }
 
     }

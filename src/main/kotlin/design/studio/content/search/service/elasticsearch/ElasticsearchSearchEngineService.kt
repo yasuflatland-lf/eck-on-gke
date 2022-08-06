@@ -9,12 +9,12 @@ import design.studio.content.search.service.elasticsearch.connection.Elasticsear
 import design.studio.content.search.service.elasticsearch.connection.ElasticsearchConnectionBuilder
 import design.studio.content.search.service.elasticsearch.connection.constants.ConnectionConstants
 import design.studio.content.search.service.elasticsearch.connection.constants.MappingConstants
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import reactor.core.publisher.Mono
 import java.io.IOException
 import javax.annotation.PreDestroy
 
@@ -73,7 +73,8 @@ class ElasticsearchSearchEngineService(config: ElasticConfig) : ElasticsearchCli
         return elasticsearchConnection.getAsyncClient()
     }
 
-    suspend fun initialize(indexName: String, alias: String): CreateIndexResponse = coroutineScope {
+    suspend fun initialize(indexName: String, alias: String): CreateIndexResponse = withContext(Dispatchers.IO) {
+        // https://www.elastic.co/guide/en/elasticsearch/client/java-api-client/current/api-conventions.htmll
         runCatching {
             async {
                 log.info("Loading the index mapping.")
@@ -98,50 +99,51 @@ class ElasticsearchSearchEngineService(config: ElasticConfig) : ElasticsearchCli
         }.fold(
             onSuccess = {
                 log.info("Index settings and mapping is correctly applied.")
-                return@coroutineScope it.await().get()
+                return@fold it.await().get()
             },
             onFailure = {
                 log.error("Failed to initialize ${indexName}. \n\n" + it.stackTraceToString())
                 throw it
             }
         )
-//        var createIndexResponse = async {
-//            getClient().indices()
-//                .create { c: CreateIndexRequest.Builder ->
-//                    c.index(indexName)
-//                        .aliases(
-//                            alias
-//                        ) { a: Alias.Builder ->
-//                            a.isWriteIndex(true)
-//                        }
-//                        .settings(indexSettings)
-//                        .mappings(typeMapping)
-//                }
-//        }
-//
-//        return@coroutineScope createIndexResponse.await().get()
-
-        // https://www.elastic.co/guide/en/elasticsearch/client/java-api-client/current/api-conventions.htmll
-
     }
 
-    fun deleteIndices(indexName: String): Mono<DeleteIndexResponse> {
-        return Mono.fromFuture(getClient().indices().delete { d: DeleteIndexRequest.Builder ->
-            d.index(indexName)
-        }).doOnSuccess {
-            log.info("${indexName} is deleted")
-        }.doOnError {
-            log.error("Failed to delete ${indexName}. \n\n" + it.stackTraceToString())
-        }
+    suspend fun deleteIndices(indexName: String): DeleteIndexResponse = withContext(Dispatchers.IO) {
+        runCatching {
+            async {
+                getClient().indices().delete { d: DeleteIndexRequest.Builder ->
+                    d.index(indexName)
+                }
+            }
+        }.fold(
+            onSuccess = {
+                log.info("${indexName} is deleted")
+                return@fold it.await().get()
+            },
+            onFailure = {
+                log.error("Failed to delete ${indexName}. \n\n" + it.stackTraceToString())
+                throw it
+            }
+        )
     }
 
-    fun getQueryFromJSON(queryJSON: String): Mono<Query> {
-        return Mono.defer {
-            var reader = MappingFileReader()
-            var query = reader.fromJson(
-                queryJSON, Query._DESERIALIZER
-            )
-            return@defer Mono.just(query)
-        }
+    suspend fun getQueryFromJSON(queryJSON: String): Query = withContext(Dispatchers.IO) {
+        runCatching {
+            async {
+                var reader = MappingFileReader()
+                var query = reader.fromJson(
+                    queryJSON, Query._DESERIALIZER
+                )
+                return@async query
+            }
+        }.fold(
+            onSuccess = {
+                return@fold it.await()
+            },
+            onFailure = {
+                throw it
+            }
+        )
     }
+
 }

@@ -14,9 +14,6 @@ import jakarta.json.stream.JsonParser
 import java.io.StringReader
 import java.io.StringWriter
 
-
-
-
 /**
  * @author Yasuyuki Takeo
  */
