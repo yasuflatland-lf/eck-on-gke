@@ -50,5 +50,26 @@ class CMSArticleHandlerTest : FunSpec() {
             }
         }
 
+        test("search smoke") {
+            runTest {
+                var entiety = CMSArticle()
+                var id = "hoge"
+
+                entiety.title = "test title"
+                entiety.content = "test content"
+                entiety.title_ja = "test title"
+                entiety.content_ja = "test content"
+                var res = async { cmsArticleHandler.createIndex(indexName, id, entiety) }
+                res.await().id() shouldBe id
+
+                var result = async { cmsArticleHandler.search(indexName, "test", 0, 100) }
+                result.await().size shouldNotBe 1
+
+                var result2 = async { cmsArticleHandler.search(indexName, "aaa", 0, 100) }
+                result2.await().size shouldBe 0
+
+            }
+        }
+
     }
 }
