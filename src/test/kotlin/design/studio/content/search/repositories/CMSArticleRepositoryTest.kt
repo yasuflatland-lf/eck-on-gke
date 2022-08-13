@@ -1,4 +1,4 @@
-package design.studio.content.search.usecase
+package design.studio.content.search.repositories
 
 import co.elastic.clients.elasticsearch.core.bulk.OperationType
 import design.studio.content.search.model.CMSArticle
@@ -24,18 +24,18 @@ import org.testcontainers.junit.jupiter.Testcontainers
 @SpringBootTest
 @ActiveProfiles("test")
 @ContextConfiguration(initializers = [AbstractContainerBaseTest.Initializer::class])
-class CMSArticleHandlerTest : FunSpec() {
+class CMSArticleRepositoryTest : FunSpec() {
     override fun extensions() = listOf(SpringExtension)
 
     @Autowired
-    lateinit var cmsArticleHandler: CMSArticleHandler
+    lateinit var cmsArticleRepository: CMSArticleRepository
 
     val indexName = "studio-index"
 
     init {
         afterEach {
             runTest {
-                var result = cmsArticleHandler.deleteIndex(indexName)
+                var result = cmsArticleRepository.deleteIndex(indexName)
             }
         }
 
@@ -48,7 +48,7 @@ class CMSArticleHandlerTest : FunSpec() {
                 entiety.content = "test content"
                 entiety.title_ja = "test title"
                 entiety.content_ja = "test content"
-                var res = async { cmsArticleHandler.createIndex(indexName, id, entiety) }
+                var res = async { cmsArticleRepository.createIndex(indexName, id, entiety) }
                 res.await().id() shouldBe id
             }
         }
@@ -62,13 +62,13 @@ class CMSArticleHandlerTest : FunSpec() {
                 entiety.content = "test content"
                 entiety.title_ja = "test title"
                 entiety.content_ja = "test content"
-                var res = async { cmsArticleHandler.createIndex(indexName, id, entiety) }
+                var res = async { cmsArticleRepository.createIndex(indexName, id, entiety) }
                 res.await().id() shouldBe id
 
-                var result = async { cmsArticleHandler.search(indexName, "test", 0, 100) }
+                var result = async { cmsArticleRepository.search(indexName, "test", 0, 100) }
                 result.await().size shouldNotBe 1
 
-                var result2 = async { cmsArticleHandler.search(indexName, "aaa", 0, 100) }
+                var result2 = async { cmsArticleRepository.search(indexName, "aaa", 0, 100) }
                 result2.await().size shouldBe 0
 
             }
@@ -85,7 +85,7 @@ class CMSArticleHandlerTest : FunSpec() {
                 }.orEmpty()
 
                 var res = async {
-                    cmsArticleHandler.createBulkIndices(indexName, bulk)
+                    cmsArticleRepository.createBulkIndices(indexName, bulk)
                 }
 
                 res.await().errors() shouldBe false
@@ -107,7 +107,7 @@ class CMSArticleHandlerTest : FunSpec() {
                 }.orEmpty()
 
                 var res = async {
-                    cmsArticleHandler.createBulkIndices(indexName, bulk)
+                    cmsArticleRepository.createBulkIndices(indexName, bulk)
                 }
 
                 var result = res.await()
@@ -120,7 +120,7 @@ class CMSArticleHandlerTest : FunSpec() {
                 var update = listOf<CMSArticle>(CMSArticle(id, 0, 0, listOf(0), "", "", "updated title", "updated content"))
 
                 var updateRes = async {
-                    cmsArticleHandler.updateBulkIndices(indexName, id, update)
+                    cmsArticleRepository.updateBulkIndices(indexName, id, update)
                 }
 
                 var updateResult = updateRes.await()

@@ -1,4 +1,4 @@
-package design.studio.content.search.usecase
+package design.studio.content.search.repositories
 
 import co.elastic.clients.elasticsearch.ElasticsearchAsyncClient
 import co.elastic.clients.elasticsearch._types.Refresh
@@ -19,11 +19,11 @@ import java.util.concurrent.CompletableFuture
  * @author Yasuyuki Takeo
  */
 @Service
-class CMSArticleHandler(
+class CMSArticleRepository(
         var elasticsearchSearchEngineService: ElasticsearchSearchEngineService
 ) {
     companion object {
-        val log: Logger = LoggerFactory.getLogger(CMSArticleHandler::class.java)
+        val log: Logger = LoggerFactory.getLogger(CMSArticleRepository::class.java)
     }
 
     fun getClient(): ElasticsearchAsyncClient {

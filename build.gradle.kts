@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
+    jacoco
     id("io.freefair.lombok") version "6.5.0.3"
     id("org.springframework.boot") version "2.6.9"
     id("io.spring.dependency-management") version "1.0.12.RELEASE"
@@ -25,6 +26,7 @@ repositories {
 
 // Springboot
 extra["kotestVersion"] = "5.1.0"
+extra["openAPIVersion"] = "1.6.9"
 extra["springCloudVersion"] = "2021.0.0"
 extra["testcontainersVersion"] = "1.17.3"
 extra["kotlin-coroutines.version"] = "1.6.3"
@@ -46,9 +48,15 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
 
     implementation("org.springframework:spring-jdbc")
-    compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+    // Lombok
+    compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
+
+    // OpenAPI
+    implementation("org.springdoc:springdoc-openapi-kotlin:${property("openAPIVersion")}")
+    implementation("org.springdoc:springdoc-openapi-webflux-ui:${property("openAPIVersion")}")
 
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
@@ -89,4 +97,15 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.isEnabled = true
+        html.isEnabled = true
+    }
+}
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
 }
