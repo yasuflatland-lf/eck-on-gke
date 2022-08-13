@@ -1,5 +1,6 @@
 package design.studio.content.search.usecase
 
+import co.elastic.clients.elasticsearch.core.bulk.OperationType
 import design.studio.content.search.model.CMSArticle
 import design.studio.content.search.service.AbstractContainerBaseTest
 import design.studio.content.search.test.utils.TestContentReader
@@ -34,7 +35,7 @@ class CMSArticleHandlerTest : FunSpec() {
     init {
         afterEach {
             runTest {
-                var result = cmsArticleHandler.deleteIndices(indexName)
+                var result = cmsArticleHandler.deleteIndex(indexName)
             }
         }
 
@@ -84,10 +85,48 @@ class CMSArticleHandlerTest : FunSpec() {
                 }.orEmpty()
 
                 var res = async {
-                    cmsArticleHandler.createBulkIndex(indexName, bulk)
+                    cmsArticleHandler.createBulkIndices(indexName, bulk)
                 }
 
-                res.await().items().get(0).status() shouldBe HttpResponseStatus.CREATED.code()
+                res.await().errors() shouldBe false
+                res.await().items()[0].operationType() shouldBe OperationType.Create
+                res.await().items()[0].status() shouldBe HttpResponseStatus.CREATED.code()
+            }
+        }
+
+        test("Bulk update smoke") {
+            runTest {
+
+                // Create Index
+                var contents = TestContentReader.getContents("/testContents.json")
+                var bulk = contents?.map { it ->
+                    var entity = CMSArticle()
+                    entity.title_ja = it.title
+                    entity.content_ja = it.body
+                    return@map entity
+                }.orEmpty()
+
+                var res = async {
+                    cmsArticleHandler.createBulkIndices(indexName, bulk)
+                }
+
+                var result = res.await()
+                var id = result.items()[0].id().orEmpty()
+                result.errors() shouldBe false
+                result.items()[0].status() shouldBe HttpResponseStatus.CREATED.code()
+                result.items()[0].operationType() shouldBe OperationType.Create
+
+                // Update Test
+                var update = listOf<CMSArticle>(CMSArticle(id, 0, 0, listOf(0), "", "", "updated title", "updated content"))
+
+                var updateRes = async {
+                    cmsArticleHandler.updateBulkIndices(indexName, id, update)
+                }
+
+                var updateResult = updateRes.await()
+                updateResult.errors() shouldBe false
+                updateResult.items()[0].status() shouldBe HttpResponseStatus.OK.code()
+                updateResult.items()[0].operationType() shouldBe OperationType.Update
             }
         }
     }

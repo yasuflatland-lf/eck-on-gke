@@ -20,7 +20,7 @@ import java.util.concurrent.CompletableFuture
  */
 @Service
 class CMSArticleHandler(
-    var elasticsearchSearchEngineService: ElasticsearchSearchEngineService
+        var elasticsearchSearchEngineService: ElasticsearchSearchEngineService
 ) {
     companion object {
         val log: Logger = LoggerFactory.getLogger(CMSArticleHandler::class.java)
@@ -30,86 +30,90 @@ class CMSArticleHandler(
         return elasticsearchSearchEngineService.getClient()
     }
 
-    suspend fun createBulkIndex(indexName: String, entities: List<CMSArticle>): BulkResponse =
-        coroutineScope {
-            return@coroutineScope runCatching {
-                async {
-                    getClient().bulk { br: BulkRequest.Builder ->
-                        entities.map { entity ->
-                            br.operations { op ->
-                                op
-                                    .index<CMSArticle> { idx ->
-                                        idx
-                                            .index(indexName)
-                                            .id(null)
-                                            .document(entity)
+    suspend fun updateBulkIndices(indexName: String, id: String, entities: List<CMSArticle>, upsert: Boolean? = false): BulkResponse =
+            coroutineScope {
+                return@coroutineScope runCatching {
+                    async {
+                        getClient().bulk { br: BulkRequest.Builder ->
+                            entities.map { entity ->
+                                br.operations { op ->
+                                    op.update<CMSArticle, CMSArticle> { co ->
+                                        co.index(indexName).id(id).action { a ->
+                                            a.docAsUpsert(upsert).doc(entity)
+                                        }
                                     }
+                                }
+                            }
+                            return@bulk br
+                        }
+                    }
+                }.fold(onSuccess = {
+                    log.info("$indexName is bulk updated")
+                    return@fold it.await().get()
+                }, onFailure = {
+                    log.error("Failed to bulk update ${indexName}. \n\n" + it.stackTraceToString())
+                    throw it
+                })
+            }
+
+    suspend fun createBulkIndices(indexName: String, entities: List<CMSArticle>): BulkResponse = coroutineScope {
+        return@coroutineScope runCatching {
+            async {
+                getClient().bulk { br: BulkRequest.Builder ->
+                    entities.map { entity ->
+                        br.operations { op ->
+                            op.create<CMSArticle> { co ->
+                                co.index(indexName).id(null).document(entity)
                             }
                         }
-                        return@bulk br
                     }
+                    return@bulk br
                 }
-            }.fold(
-                onSuccess = {
-                    log.info("${indexName} is bulk created")
-                    return@fold it.await().get()
-                },
-                onFailure = {
-                    log.error("Failed to bulk create ${indexName}. \n\n" + it.stackTraceToString())
-                    throw it
-                }
-            )
-
-        }
+            }
+        }.fold(onSuccess = {
+            log.info("$indexName is bulk created")
+            return@fold it.await().get()
+        }, onFailure = {
+            log.error("Failed to bulk create ${indexName}. \n\n" + it.stackTraceToString())
+            throw it
+        })
+    }
 
 
     suspend fun createIndex(indexName: String, id: String, entity: Any): IndexResponse = coroutineScope {
         return@coroutineScope runCatching {
             async {
                 getClient().index { b: IndexRequest.Builder<Any?> ->
-                    b
-                        .index(indexName)
-                        .id(id)
-                        .document(entity)
-                        .refresh(Refresh.True)
+                    b.index(indexName).id(id).document(entity).refresh(Refresh.True)
                 }
             }
-        }.fold(
-            onSuccess = {
-                ElasticsearchSearchEngineService.log.info("${indexName} is created")
-                return@fold it.await().get()
-            },
-            onFailure = {
-                ElasticsearchSearchEngineService.log.error("Failed to create ${indexName}. \n\n" + it.stackTraceToString())
-                throw it
-            }
-        )
+        }.fold(onSuccess = {
+            ElasticsearchSearchEngineService.log.info("$indexName is created")
+            return@fold it.await().get()
+        }, onFailure = {
+            ElasticsearchSearchEngineService.log.error("Failed to create ${indexName}. \n\n" + it.stackTraceToString())
+            throw it
+        })
     }
 
-    suspend fun deleteIndices(indexName: String): DeleteIndexResponse = coroutineScope {
+    suspend fun deleteIndex(indexName: String): DeleteIndexResponse = coroutineScope {
         return@coroutineScope runCatching {
             async {
                 getClient().indices().delete { d: DeleteIndexRequest.Builder ->
                     d.index(indexName)
                 }
             }
-        }.fold(
-            onSuccess = {
-                ElasticsearchSearchEngineService.log.info("${indexName} is deleteed")
-                return@fold it.await().get()
-            },
-            onFailure = {
-                ElasticsearchSearchEngineService.log.error("Failed to delete ${indexName}. \n\n" + it.stackTraceToString())
-                throw it
-            }
-        )
+        }.fold(onSuccess = {
+            ElasticsearchSearchEngineService.log.info("$indexName is deleteed")
+            return@fold it.await().get()
+        }, onFailure = {
+            ElasticsearchSearchEngineService.log.error("Failed to delete ${indexName}. \n\n" + it.stackTraceToString())
+            throw it
+        })
     }
 
     private suspend fun performFulltextSearch(
-        indexName: String,
-        requestedQuery: String,
-        length: Int = 20,
-        startFrom: Int = 0
+            indexName: String, requestedQuery: String, length: Int = 20, startFrom: Int = 0
     ): CompletableFuture<SearchResponse<CMSArticle>>? {
 
         val request = SearchRequest.of { s ->
@@ -119,26 +123,26 @@ class CMSArticleHandler(
             s.query { query ->
                 query.bool { bool ->
                     bool.must(
-                        listOf(Query.of { query ->
-                            query.multiMatch { mm ->
-                                mm.query(requestedQuery)
-                                mm.fields(
-                                    "title_ja.ngram",
-                                    "content_ja.ngram",
-                                )
-                            }
-                        })
+                            listOf(Query.of { query ->
+                                query.multiMatch { mm ->
+                                    mm.query(requestedQuery)
+                                    mm.fields(
+                                            "title_ja.ngram",
+                                            "content_ja.ngram",
+                                    )
+                                }
+                            })
                     )
                     bool.should(
-                        listOf(Query.of { query ->
-                            query.multiMatch { mm ->
-                                mm.query(requestedQuery)
-                                mm.fields(
-                                    "title_ja",
-                                    "content_ja",
-                                )
-                            }
-                        })
+                            listOf(Query.of { query ->
+                                query.multiMatch { mm ->
+                                    mm.query(requestedQuery)
+                                    mm.fields(
+                                            "title_ja",
+                                            "content_ja",
+                                    )
+                                }
+                            })
                     )
                 }
             }
@@ -147,18 +151,13 @@ class CMSArticleHandler(
     }
 
     suspend fun search(
-        indexName: String,
-        query: String,
-        pagination: Int = 0,
-        length: Int = 100
-    ): List<CMSArticle?> =
-        coroutineScope {
-            var result = async {
-                performFulltextSearch(indexName, query, length, pagination * length)
-            }
-
-            return@coroutineScope result.await()?.get()?.hits()?.hits()?.map { it.source() }
-                ?: emptyList<CMSArticle>()
+            indexName: String, query: String, pagination: Int = 0, length: Int = 100
+    ): List<CMSArticle?> = coroutineScope {
+        var result = async {
+            performFulltextSearch(indexName, query, length, pagination * length)
         }
+
+        return@coroutineScope result.await()?.get()?.hits()?.hits()?.map { it.source() } ?: emptyList<CMSArticle>()
+    }
 }
 

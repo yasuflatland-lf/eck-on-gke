@@ -7,7 +7,7 @@ import org.springframework.data.annotation.Id
  */
 data class CMSArticle(
     @Id
-    var id: Long?,
+    var id: String?,
     var projectId: Long?,
     var groupId: Long?,
     var roleIds: List<Long>?,
@@ -16,5 +16,5 @@ data class CMSArticle(
     var title_ja: String?,
     var content_ja: String?
 ) {
-    constructor() : this(0, 0, 0, emptyList(), "", "","","")
+    constructor() : this("", 0, 0, emptyList(), "", "","","")
 }
