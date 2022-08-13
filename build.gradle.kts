@@ -5,6 +5,7 @@ plugins {
     id("org.springframework.boot") version "2.6.9"
     id("io.spring.dependency-management") version "1.0.12.RELEASE"
     kotlin("jvm") version "1.6.21"
+    kotlin("plugin.serialization") version "1.6.21"
     kotlin("plugin.spring") version "1.6.21"
 }
 
@@ -42,6 +43,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
+
     implementation("org.springframework:spring-jdbc")
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")

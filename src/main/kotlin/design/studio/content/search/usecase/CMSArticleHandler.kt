@@ -3,10 +3,7 @@ package design.studio.content.search.usecase
 import co.elastic.clients.elasticsearch.ElasticsearchAsyncClient
 import co.elastic.clients.elasticsearch._types.Refresh
 import co.elastic.clients.elasticsearch._types.query_dsl.Query
-import co.elastic.clients.elasticsearch.core.IndexRequest
-import co.elastic.clients.elasticsearch.core.IndexResponse
-import co.elastic.clients.elasticsearch.core.SearchRequest
-import co.elastic.clients.elasticsearch.core.SearchResponse
+import co.elastic.clients.elasticsearch.core.*
 import co.elastic.clients.elasticsearch.indices.DeleteIndexRequest
 import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse
 import design.studio.content.search.model.CMSArticle
@@ -32,6 +29,39 @@ class CMSArticleHandler(
     fun getClient(): ElasticsearchAsyncClient {
         return elasticsearchSearchEngineService.getClient()
     }
+
+    suspend fun createBulkIndex(indexName: String, entities: List<CMSArticle>): BulkResponse =
+        coroutineScope {
+            return@coroutineScope runCatching {
+                async {
+                    getClient().bulk { br: BulkRequest.Builder ->
+                        entities.map { entity ->
+                            br.operations { op ->
+                                op
+                                    .index<CMSArticle> { idx ->
+                                        idx
+                                            .index(indexName)
+                                            .id(null)
+                                            .document(entity)
+                                    }
+                            }
+                        }
+                        return@bulk br
+                    }
+                }
+            }.fold(
+                onSuccess = {
+                    log.info("${indexName} is bulk created")
+                    return@fold it.await().get()
+                },
+                onFailure = {
+                    log.error("Failed to bulk create ${indexName}. \n\n" + it.stackTraceToString())
+                    throw it
+                }
+            )
+
+        }
+
 
     suspend fun createIndex(indexName: String, id: String, entity: Any): IndexResponse = coroutineScope {
         return@coroutineScope runCatching {
@@ -116,13 +146,19 @@ class CMSArticleHandler(
         return getClient().search(request, CMSArticle::class.java)
     }
 
-    suspend fun search(indexName: String, query: String, pagination: Int = 0, length: Int = 100): List<CMSArticle?> =
+    suspend fun search(
+        indexName: String,
+        query: String,
+        pagination: Int = 0,
+        length: Int = 100
+    ): List<CMSArticle?> =
         coroutineScope {
             var result = async {
                 performFulltextSearch(indexName, query, length, pagination * length)
             }
 
-            return@coroutineScope result.await()?.get()?.hits()?.hits()?.map { it.source() } ?: emptyList<CMSArticle>()
+            return@coroutineScope result.await()?.get()?.hits()?.hits()?.map { it.source() }
+                ?: emptyList<CMSArticle>()
         }
 }
 
