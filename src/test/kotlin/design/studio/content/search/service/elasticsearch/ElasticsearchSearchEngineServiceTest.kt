@@ -5,6 +5,7 @@ import design.studio.content.search.service.elasticsearch.connection.constants.C
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -20,6 +21,7 @@ import reactor.test.StepVerifier
 @SpringBootTest
 @ActiveProfiles("test")
 @ContextConfiguration(initializers = [AbstractContainerBaseTest.Initializer::class])
+@ExperimentalCoroutinesApi
 class ElasticsearchSearchEngineServiceTest : FunSpec() {
     override fun extensions() = listOf(SpringExtension)
 

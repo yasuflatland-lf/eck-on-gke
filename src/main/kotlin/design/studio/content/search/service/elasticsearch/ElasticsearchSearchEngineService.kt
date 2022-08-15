@@ -45,14 +45,14 @@ class ElasticsearchSearchEngineService(config: ElasticConfig) : ElasticsearchCli
 
     fun connect(config: ElasticConfig) {
         elasticsearchConnection = ElasticsearchConnectionBuilder.Builder()
-                .connectionId(config.connectionId)
-                .serverName(config.serverName)
-                .port(config.port)
-                .username(config.username)
-                .password(config.password)
-                .caPath(config.caPath)
-                .active(true)
-                .build()
+            .connectionId(config.connectionId)
+            .serverName(config.serverName)
+            .port(config.port)
+            .username(config.username)
+            .password(config.password)
+            .caPath(config.caPath)
+            .active(true)
+            .build()
 
         try {
             elasticsearchConnection.connect()
@@ -60,8 +60,8 @@ class ElasticsearchSearchEngineService(config: ElasticConfig) : ElasticsearchCli
             if (config.connectionId == ConnectionConstants.SIDECAR_CONNECTION_ID
             ) {
                 log.error(
-                        "Elasticsearch sidecar could not be started",
-                        runtimeException
+                    "Elasticsearch sidecar could not be started",
+                    runtimeException
                 );
             }
 
@@ -85,26 +85,26 @@ class ElasticsearchSearchEngineService(config: ElasticConfig) : ElasticsearchCli
                 var indexSettings: IndexSettings? = reader.getIndexSettings(indexName, json)
 
                 getClient().indices()
-                        .create { c: CreateIndexRequest.Builder ->
-                            c.index(indexName)
-                                    .aliases(
-                                            alias
-                                    ) { a: Alias.Builder ->
-                                        a.isWriteIndex(true)
-                                    }
-                                    .settings(indexSettings)
-                                    .mappings(typeMapping)
-                        }
+                    .create { c: CreateIndexRequest.Builder ->
+                        c.index(indexName)
+                            .aliases(
+                                alias
+                            ) { a: Alias.Builder ->
+                                a.isWriteIndex(true)
+                            }
+                            .settings(indexSettings)
+                            .mappings(typeMapping)
+                    }
             }
         }.fold(
-                onSuccess = {
-                    log.info("Index settings and mapping is correctly applied.")
-                    return@fold it.await().get()
-                },
-                onFailure = {
-                    log.error("Failed to initialize ${indexName}. \n\n" + it.stackTraceToString())
-                    throw it
-                }
+            onSuccess = {
+                log.info("Index settings and mapping is correctly applied.")
+                return@fold it.await().get()
+            },
+            onFailure = {
+                log.error("Failed to initialize ${indexName}. \n\n" + it.stackTraceToString())
+                throw it
+            }
         )
     }
 
@@ -116,14 +116,14 @@ class ElasticsearchSearchEngineService(config: ElasticConfig) : ElasticsearchCli
                 }
             }
         }.fold(
-                onSuccess = {
-                    log.info("${indexName} is deleted")
-                    return@fold it.await().get()
-                },
-                onFailure = {
-                    log.error("Failed to delete ${indexName}. \n\n" + it.stackTraceToString())
-                    throw it
-                }
+            onSuccess = {
+                log.info("${indexName} is deleted")
+                return@fold it.await().get()
+            },
+            onFailure = {
+                log.error("Failed to delete ${indexName}. \n\n" + it.stackTraceToString())
+                throw it
+            }
         )
     }
 
@@ -132,17 +132,17 @@ class ElasticsearchSearchEngineService(config: ElasticConfig) : ElasticsearchCli
             async {
                 var reader = MappingFileReader()
                 var query = reader.fromJson(
-                        queryJSON, Query._DESERIALIZER
+                    queryJSON, Query._DESERIALIZER
                 )
                 return@async query
             }
         }.fold(
-                onSuccess = {
-                    return@fold it.await()
-                },
-                onFailure = {
-                    throw it
-                }
+            onSuccess = {
+                return@fold it.await()
+            },
+            onFailure = {
+                throw it
+            }
         )
     }
 

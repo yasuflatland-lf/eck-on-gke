@@ -16,5 +16,5 @@ data class CMSArticle(
     var title_ja: String?,
     var content_ja: String?
 ) {
-    constructor() : this("", 0, 0, emptyList(), "", "","","")
+    constructor() : this("", 0, 0, emptyList(), "", "", "", "")
 }

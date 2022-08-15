@@ -3,12 +3,14 @@ package design.studio.content.search.repositories
 import co.elastic.clients.elasticsearch.core.bulk.OperationType
 import design.studio.content.search.model.CMSArticle
 import design.studio.content.search.service.AbstractContainerBaseTest
+import design.studio.content.search.service.elasticsearch.connection.constants.ConnectionConstants
 import design.studio.content.search.test.utils.TestContentReader
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.netty.handler.codec.http.HttpResponseStatus
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.test.runTest
 import org.springframework.beans.factory.annotation.Autowired
@@ -24,18 +26,17 @@ import org.testcontainers.junit.jupiter.Testcontainers
 @SpringBootTest
 @ActiveProfiles("test")
 @ContextConfiguration(initializers = [AbstractContainerBaseTest.Initializer::class])
+@ExperimentalCoroutinesApi
 class CMSArticleRepositoryTest : FunSpec() {
     override fun extensions() = listOf(SpringExtension)
 
     @Autowired
     lateinit var cmsArticleRepository: CMSArticleRepository
 
-    val indexName = "studio-index"
-
     init {
         afterEach {
             runTest {
-                var result = cmsArticleRepository.deleteIndex(indexName)
+                cmsArticleRepository.deleteIndex(ConnectionConstants.DEFAULT_INDEX)
             }
         }
 
@@ -48,7 +49,7 @@ class CMSArticleRepositoryTest : FunSpec() {
                 entiety.content = "test content"
                 entiety.title_ja = "test title"
                 entiety.content_ja = "test content"
-                var res = async { cmsArticleRepository.createIndex(indexName, id, entiety) }
+                var res = async { cmsArticleRepository.createIndex(ConnectionConstants.DEFAULT_INDEX, id, entiety) }
                 res.await().id() shouldBe id
             }
         }
@@ -62,13 +63,13 @@ class CMSArticleRepositoryTest : FunSpec() {
                 entiety.content = "test content"
                 entiety.title_ja = "test title"
                 entiety.content_ja = "test content"
-                var res = async { cmsArticleRepository.createIndex(indexName, id, entiety) }
+                var res = async { cmsArticleRepository.createIndex(ConnectionConstants.DEFAULT_INDEX, id, entiety) }
                 res.await().id() shouldBe id
 
-                var result = async { cmsArticleRepository.search(indexName, "test", 0, 100) }
+                var result = async { cmsArticleRepository.search(ConnectionConstants.DEFAULT_INDEX, "test", 0, 100) }
                 result.await().size shouldNotBe 1
 
-                var result2 = async { cmsArticleRepository.search(indexName, "aaa", 0, 100) }
+                var result2 = async { cmsArticleRepository.search(ConnectionConstants.DEFAULT_INDEX, "aaa", 0, 100) }
                 result2.await().size shouldBe 0
 
             }
@@ -85,7 +86,7 @@ class CMSArticleRepositoryTest : FunSpec() {
                 }.orEmpty()
 
                 var res = async {
-                    cmsArticleRepository.createBulkIndices(indexName, bulk)
+                    cmsArticleRepository.createBulkIndices(ConnectionConstants.DEFAULT_INDEX, bulk)
                 }
 
                 res.await().errors() shouldBe false
@@ -107,7 +108,7 @@ class CMSArticleRepositoryTest : FunSpec() {
                 }.orEmpty()
 
                 var res = async {
-                    cmsArticleRepository.createBulkIndices(indexName, bulk)
+                    cmsArticleRepository.createBulkIndices(ConnectionConstants.DEFAULT_INDEX, bulk)
                 }
 
                 var result = res.await()
@@ -120,7 +121,7 @@ class CMSArticleRepositoryTest : FunSpec() {
                 var update = listOf<CMSArticle>(CMSArticle(id, 0, 0, listOf(0), "", "", "updated title", "updated content"))
 
                 var updateRes = async {
-                    cmsArticleRepository.updateBulkIndices(indexName, id, update)
+                    cmsArticleRepository.updateBulkIndices(ConnectionConstants.DEFAULT_INDEX, id, update)
                 }
 
                 var updateResult = updateRes.await()
