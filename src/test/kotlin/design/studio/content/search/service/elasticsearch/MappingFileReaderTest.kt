@@ -1,10 +1,10 @@
 package design.studio.content.search.service.elasticsearch
 
 import co.elastic.clients.elasticsearch._types.query_dsl.*
+import co.elastic.clients.elasticsearch.indices.CreateIndexResponse
 import design.studio.content.search.service.elasticsearch.connection.constants.MappingConstants
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.spring.SpringExtension
-import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
@@ -294,12 +294,23 @@ class MappingFileReaderTest : FunSpec() {
                     }
             }
             var queryJSON = "{\"intervals\":{\"a_field\":{\"_name\":\"my-query\"," +
-                    "\"any_of\":{\"intervals\":[{\"match\":{\"analyzer\":\"lowercase\",\"query\":\"match-query\"}}]}}}}"
+                "\"any_of\":{\"intervals\":[{\"match\":{\"analyzer\":\"lowercase\",\"query\":\"match-query\"}}]}}}}"
             var query = reader.fromJson(
                 queryJSON, Query._DESERIALIZER
             )
 
             reader.toJson(query) shouldBe reader.toJson(expected)
+        }
+
+        test("CreateIndexResponse Serialise") {
+            var reader = MappingFileReader()
+            var res = CreateIndexResponse.of { b: CreateIndexResponse.Builder ->
+                b
+                    .index("some-index")
+                    .shardsAcknowledged(true)
+                    .acknowledged(true)
+            }
+            reader.toJson(res) shouldBe "{\"index\":\"some-index\",\"shards_acknowledged\":true,\"acknowledged\":true}"
         }
     }
 }

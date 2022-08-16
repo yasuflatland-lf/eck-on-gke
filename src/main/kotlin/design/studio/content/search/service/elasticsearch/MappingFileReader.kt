@@ -37,7 +37,7 @@ class MappingFileReader() {
         return response.get(indexName)!!.settings()
     }
 
-    fun <T> toJson(value: T): String? {
+    fun <T> toJson(value: T): String {
         val sw = StringWriter()
         val provider: JsonProvider = mapper.jsonProvider()
         val generator: JsonGenerator = provider.createGenerator(sw)

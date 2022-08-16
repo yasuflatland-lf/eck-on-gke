@@ -58,7 +58,7 @@ class CMSArticleRouterTest : FunSpec() {
                 .expectStatus()
                 .is2xxSuccessful
                 .expectBody()
-                .json("[\"{\\\"index\\\":\\\"studio-index\\\",\\\"shards_acknowledged\\\":true,\\\"acknowledged\\\":true}\"]")
+                .json("{\"index\":\"studio-index\",\"shards_acknowledged\":true,\"acknowledged\":true}")
                 .returnResult()
 
         }

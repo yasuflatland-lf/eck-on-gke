@@ -1,9 +1,8 @@
 package design.studio.content.search.handlers
 
-import co.elastic.clients.json.JsonpUtils
 import design.studio.content.search.repositories.CMSArticleRepository
+import design.studio.content.search.service.elasticsearch.MappingFileReader
 import design.studio.content.search.service.elasticsearch.connection.constants.ConnectionConstants
-import design.studio.content.search.utils.ToStringMapper
 import kotlinx.coroutines.flow.flowOf
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -34,9 +33,8 @@ class CMSArticleHandler(val repository: CMSArticleRepository) {
             repository.initialize(indexName, alias)
         }.fold(
             onSuccess = {
-                var sb = StringBuilder()
                 ok().contentType(APPLICATION_JSON)
-                    .bodyAndAwait(flowOf(JsonpUtils.toString(it, ToStringMapper.INSTANCE, sb)))
+                    .bodyAndAwait(flowOf(MappingFileReader().toJson(it)))
             },
             onFailure = {
                 log.error(it.message)
