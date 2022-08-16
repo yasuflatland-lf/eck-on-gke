@@ -17,7 +17,7 @@ import java.io.StringWriter
 /**
  * @author Yasuyuki Takeo
  */
-class MappingFileReader() {
+class JsonUtils() {
     var mapper: JsonpMapper = JacksonJsonpMapper()
 
     fun getResource(fileName: String) =

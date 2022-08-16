@@ -78,7 +78,7 @@ class ElasticsearchSearchEngineService(config: ElasticConfig) : ElasticsearchCli
         runCatching {
             async {
                 log.info("Loading the index mapping.")
-                var reader = MappingFileReader()
+                var reader = JsonUtils()
                 var json: String = reader.getResource(MappingConstants.MAPPING_FILE_PATH)
 
                 var typeMapping: TypeMapping? = reader.getTypeMappings(indexName, json)
@@ -130,7 +130,7 @@ class ElasticsearchSearchEngineService(config: ElasticConfig) : ElasticsearchCli
     suspend fun getQueryFromJSON(queryJSON: String): Query = withContext(Dispatchers.IO) {
         runCatching {
             async {
-                var reader = MappingFileReader()
+                var reader = JsonUtils()
                 var query = reader.fromJson(
                     queryJSON, Query._DESERIALIZER
                 )

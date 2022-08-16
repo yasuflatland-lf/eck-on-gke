@@ -12,18 +12,18 @@ import io.kotest.matchers.string.shouldContain
 /**
  * @author Yasuyuki Takeo
  */
-class MappingFileReaderTest : FunSpec() {
+class JsonUtilsTest : FunSpec() {
     override fun extensions() = listOf(SpringExtension)
 
     init {
         test("getResource Test") {
-            var reader = MappingFileReader()
+            var reader = JsonUtils()
             var json: String = reader.getResource(MappingConstants.MAPPING_FILE_PATH)
             json shouldContain "with_positions_offsets"
         }
 
         test("studio-type-mappings.json Test") {
-            var reader = MappingFileReader()
+            var reader = JsonUtils()
             var json: String = reader.getResource(MappingConstants.MAPPING_FILE_PATH)
             val mappings = reader.getTypeMappings("studio-index", json)
             mappings shouldNotBe null
@@ -114,7 +114,7 @@ class MappingFileReaderTest : FunSpec() {
     }
   }
 }"""
-            var reader = MappingFileReader()
+            var reader = JsonUtils()
             val mappings = reader.getTypeMappings("testindex", json)
             mappings shouldNotBe null
             if (mappings != null) {
@@ -264,7 +264,7 @@ class MappingFileReaderTest : FunSpec() {
     }
   }
 }"""
-            var reader = MappingFileReader()
+            var reader = JsonUtils()
             val settings = reader.getIndexSettings("testindex", json)
             settings shouldNotBe null
             if (settings != null) {
@@ -273,7 +273,7 @@ class MappingFileReaderTest : FunSpec() {
         }
 
         test("getQueryFromJSON Test") {
-            var reader = MappingFileReader()
+            var reader = JsonUtils()
             val expected = Query.of { _0: Query.Builder ->
                 _0
                     .intervals { _1: IntervalsQuery.Builder ->
@@ -303,7 +303,7 @@ class MappingFileReaderTest : FunSpec() {
         }
 
         test("CreateIndexResponse Serialise") {
-            var reader = MappingFileReader()
+            var reader = JsonUtils()
             var res = CreateIndexResponse.of { b: CreateIndexResponse.Builder ->
                 b
                     .index("some-index")

@@ -1,7 +1,7 @@
 package design.studio.content.search.handlers
 
 import design.studio.content.search.repositories.CMSArticleRepository
-import design.studio.content.search.service.elasticsearch.MappingFileReader
+import design.studio.content.search.service.elasticsearch.JsonUtils
 import design.studio.content.search.service.elasticsearch.connection.constants.ConnectionConstants
 import kotlinx.coroutines.flow.flowOf
 import org.slf4j.Logger
@@ -34,7 +34,7 @@ class CMSArticleHandler(val repository: CMSArticleRepository) {
         }.fold(
             onSuccess = {
                 ok().contentType(APPLICATION_JSON)
-                    .bodyAndAwait(flowOf(MappingFileReader().toJson(it)))
+                    .bodyAndAwait(flowOf(JsonUtils().toJson(it)))
             },
             onFailure = {
                 log.error(it.message)
