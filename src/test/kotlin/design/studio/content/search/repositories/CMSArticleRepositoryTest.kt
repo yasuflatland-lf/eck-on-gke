@@ -121,7 +121,7 @@ class CMSArticleRepositoryTest : FunSpec() {
                 var update = listOf<CMSArticle>(CMSArticle(id, 0, 0, listOf(0), "", "", "updated title", "updated content"))
 
                 var updateRes = async {
-                    cmsArticleRepository.updateBulkIndices(ConnectionConstants.DEFAULT_INDEX, id, update)
+                    cmsArticleRepository.updateBulkIndices(ConnectionConstants.DEFAULT_INDEX, update)
                 }
 
                 var updateResult = updateRes.await()

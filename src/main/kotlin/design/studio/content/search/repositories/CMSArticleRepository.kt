@@ -33,7 +33,7 @@ class CMSArticleRepository(var elasticsearchSearchEngineService: ElasticsearchSe
         return@coroutineScope elasticsearchSearchEngineService.initialize(indexName, alias)
     }
 
-    suspend fun updateBulkIndices(indexName: String, id: String, entities: List<CMSArticle>, upsert: Boolean? = false): BulkResponse = coroutineScope {
+    suspend fun updateBulkIndices(indexName: String, entities: List<CMSArticle>, upsert: Boolean? = false): BulkResponse = coroutineScope {
         return@coroutineScope runCatching {
             async {
                 getClient().bulk { br: BulkRequest.Builder ->
@@ -43,7 +43,7 @@ class CMSArticleRepository(var elasticsearchSearchEngineService: ElasticsearchSe
                                 .update<CMSArticle, CMSArticle> { co ->
                                     co
                                         .index(indexName)
-                                        .id(id).action { a ->
+                                        .id(entity.id).action { a ->
                                             a.docAsUpsert(upsert).doc(entity)
                                         }
                                 }
