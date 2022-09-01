@@ -2,12 +2,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     jacoco
-    id("org.jlleitschuh.gradle.ktlint") version "10.3.0"
-    id("org.jlleitschuh.gradle.ktlint-idea") version "10.3.0"
+    id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
+    id("org.jlleitschuh.gradle.ktlint-idea") version "11.0.0"
     id("io.gitlab.arturbosch.detekt").version("1.21.0")
-    id("io.freefair.lombok") version "6.5.0.3"
-    id("org.springframework.boot") version "2.6.9"
-    id("io.spring.dependency-management") version "1.0.12.RELEASE"
+    id("io.freefair.lombok") version "6.5.1"
+    id("org.springframework.boot") version "2.6.12"
+    id("io.spring.dependency-management") version "1.0.14.RELEASE"
     kotlin("jvm") version "1.6.21"
     kotlin("plugin.serialization") version "1.6.21"
     kotlin("plugin.spring") version "1.6.21"
@@ -29,20 +29,18 @@ repositories {
 
 // Springboot
 extra["kotestVersion"] = "5.1.0"
-extra["openAPIVersion"] = "1.6.9"
-extra["springCloudVersion"] = "2021.0.0"
+extra["openAPIVersion"] = "1.6.11"
+extra["springCloudVersion"] = "2021.0.4"
 extra["testcontainersVersion"] = "1.17.3"
-extra["kotlin-coroutines.version"] = "1.6.3"
 
 // Elasticsearch
-extra["elasticVersion"] = "8.3.3"
-extra["jacksonDataBindVersion"] = "2.12.3"
+extra["elasticVersion"] = "8.4.2"
+extra["jacksonVersion"] = "2.13.3"
 
 dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
 
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -52,6 +50,9 @@ dependencies {
 
     implementation("org.springframework:spring-jdbc")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+    // LocalDateTime
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${property("jacksonVersion")}")
 
     // Lombok
     compileOnly("org.projectlombok:lombok")
@@ -66,10 +67,11 @@ dependencies {
 
     // Elasticsearch
     implementation("co.elastic.clients:elasticsearch-java:${property("elasticVersion")}")
+    implementation("org.elasticsearch.client:elasticsearch-rest-client:${property("elasticVersion")}")
+    implementation("com.fasterxml.jackson.core:jackson-databind:${property("jacksonVersion")}")
     implementation("jakarta.json:jakarta.json-api:2.1.1")
-    implementation("com.fasterxml.jackson.core:jackson-databind:${property("jacksonDataBindVersion")}")
     implementation("org.apache.httpcomponents:httpclient:4.5.13")
-
+    
     // Test
     testImplementation("io.kotest:kotest-runner-junit5:${property("kotestVersion")}")
     testImplementation("io.kotest:kotest-assertions-core:${property("kotestVersion")}")

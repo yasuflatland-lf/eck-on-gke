@@ -9,3 +9,7 @@ app:
     username: elastic
     password: test123
     ca-path: "/Users/greeng/projects/eck-on-gke/es/certs/ca/ca.crt"
+spring:
+  jackson:
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false

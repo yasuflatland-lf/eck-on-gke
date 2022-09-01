@@ -18,7 +18,7 @@ abstract class AbstractContainerBaseTest {
     companion object {
         var composeContainer: KDockerComposeContainer = KDockerComposeContainer(File("docker-compose-test.yml"))
             .withLocalCompose(true)
-            .withEnv("STACK_VERSION", "8.3.3")
+            .withEnv("STACK_VERSION", "8.4.2")
             .withEnv("ELASTIC_PASSWORD", "test123")
             .withEnv("KIBANA_PASSWORD", "test123")
             .withEnv("CLUSTER_NAME", "StudioElasticsearchCluster")
