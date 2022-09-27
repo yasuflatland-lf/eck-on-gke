@@ -4,7 +4,6 @@ plugins {
     jacoco
     id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
     id("org.jlleitschuh.gradle.ktlint-idea") version "11.0.0"
-    id("io.gitlab.arturbosch.detekt").version("1.21.0")
     id("io.freefair.lombok") version "6.5.1"
     id("org.springframework.boot") version "2.6.12"
     id("io.spring.dependency-management") version "1.0.14.RELEASE"
@@ -71,7 +70,7 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:${property("jacksonVersion")}")
     implementation("jakarta.json:jakarta.json-api:2.1.1")
     implementation("org.apache.httpcomponents:httpclient:4.5.13")
-    
+
     // Test
     testImplementation("io.kotest:kotest-runner-junit5:${property("kotestVersion")}")
     testImplementation("io.kotest:kotest-assertions-core:${property("kotestVersion")}")
@@ -115,31 +114,6 @@ tasks.jacocoTestReport {
 
 tasks.test {
     finalizedBy(tasks.jacocoTestReport)
-}
-
-// detekt
-detekt {
-    source = files("src/main/kotlin")
-    config = files("ci/detekt.yml")
-    // Configure just a delta of the configuration file
-    buildUponDefaultConfig = true
-}
-
-tasks.register<io.gitlab.arturbosch.detekt.Detekt>("myDetekt") {
-    description = "Runs a custom detekt build."
-    setSource(files("src/main/kotlin", "src/test/kotlin"))
-    config.setFrom(files("$rootDir/config.yml"))
-    debug = true
-    reports {
-        xml {
-            outputLocation.set(file("build/reports/mydetekt.xml"))
-        }
-        html.outputLocation.set(file("build/reports/mydetekt.html"))
-    }
-    include("**/*.kt")
-    include("**/*.kts")
-    exclude("resources/")
-    exclude("build/")
 }
 
 ktlint {
