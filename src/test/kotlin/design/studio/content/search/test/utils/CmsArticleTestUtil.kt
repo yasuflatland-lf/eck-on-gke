@@ -19,7 +19,7 @@ class CmsArticleTestUtil(val cmsArticleRepository: CMSArticleRepository) {
         var bulk = contents?.map { it ->
             var entity = CMSArticle()
             entity.title_ja = it.title
-            entity.content_ja = it.body
+            entity.content_ja = it.content
             return@map entity
         }.orEmpty()
 
